@@ -22,6 +22,7 @@ public class Scenario1 extends Scenario {
                                 constant(1000*60*1) // 1 minute
                                 );
 		}};
+	
                 
                 // TODO - not used yet
 		StochasticProcess failPeersProcess = new StochasticProcess() {{
