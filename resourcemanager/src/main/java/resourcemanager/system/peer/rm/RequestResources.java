@@ -90,15 +90,29 @@ public class RequestResources  {
     public static class Response extends Message {
 
         private final boolean success;
-        public Response(Address source, Address destination, boolean success) {
+        private final int numCpus;
+        private final int amountMemInMb;
+        public Response(Address source, Address destination, boolean success, int numAllocatedCpus, int numAllocatedMem) {
             super(source, destination);
             this.success = success;
+            this.numCpus = numAllocatedCpus;
+            this.amountMemInMb = numAllocatedMem;
         }
         
         // Shatha - Review
         public boolean getSuccess()
         {
         	return this.success;
+        }
+        
+        public int getNumCpus()
+        {
+        	return this.numCpus;
+        }
+        
+        public int getAmountMemInMb()
+        {
+        	return this.amountMemInMb;
         }
     }
     

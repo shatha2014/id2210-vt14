@@ -30,14 +30,25 @@ public class AvailableResources {
 
     public synchronized boolean allocate(int numCpus, int memInMbs) {
         if (numFreeCpus >= numCpus && freeMemInMbs >= memInMbs) {
-            numFreeCpus -= numCpus;
+        	 System.out.println(" AVAILABLE RESOURCES - BEFORE  " + numFreeCpus + " and " + freeMemInMbs);
+        	 System.out.println(" AVAILABLE RESOURCES - AMOUNT " + numCpus + " and " + memInMbs);
+        	 numFreeCpus -= numCpus;
             freeMemInMbs -= memInMbs;
+            System.out.println(" AVAILABLE RESOURCES - AFTER  " + numFreeCpus + " and " + freeMemInMbs);
             return true;
         }
         return false;
     }
 
     public synchronized void release(int numCpus, int memInMbs) {
+        if (numCpus <= 0 || memInMbs <= 0) {
+            throw new IllegalArgumentException("Invalid numbCpus or mem");
+        }
+        numFreeCpus += numCpus;
+        freeMemInMbs += memInMbs;
+    }
+    
+    public synchronized void incrementResources(int numCpus, int memInMbs) {
         if (numCpus <= 0 || memInMbs <= 0) {
             throw new IllegalArgumentException("Invalid numbCpus or mem");
         }
@@ -52,4 +63,5 @@ public class AvailableResources {
     public int getFreeMemInMbs() {
         return freeMemInMbs;
     }
+    
 }

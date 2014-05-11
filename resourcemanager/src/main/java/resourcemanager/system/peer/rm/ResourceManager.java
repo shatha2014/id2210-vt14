@@ -66,6 +66,7 @@ public final class ResourceManager extends ComponentDefinition {
     };
     // Shatha Review
     private  int timeToHoldResource;
+    private int probeSize = 1; 
 
 	
     public ResourceManager() {
@@ -81,6 +82,7 @@ public final class ResourceManager extends ComponentDefinition {
         subscribe(handleActualAllocationRequest, networkPort);
         subscribe(handleAvailableResourcesResponse, networkPort);
         subscribe(handleCancelRequest, networkPort);
+        
         
     }
 	
@@ -120,13 +122,18 @@ public final class ResourceManager extends ComponentDefinition {
     Handler<RequestResources.Request> handleResourceAllocationRequest = new Handler<RequestResources.Request>() {
         @Override
         public void handle(RequestResources.Request event) {
+        	// Printing out on the screen for tracking purpose   
+        	System.out.println("I am here at Resource allocation request handler : " +
+                 "I am : " + event.getDestination() + " i have a request from : " + event.getSource() +
+                 " and i have the following resources " + availableResources.getNumFreeCpus() + " and " + availableResources.getFreeMemInMbs());
+        	  
 			// Shatha - Review
 			// when the node received a request to allocate resources, it should
 			// return the number of free CPUs and memory it has
 			RequestResources.AvailableResourcesResponse objAvailableResourcesResponse = new RequestResources.AvailableResourcesResponse(
 					self, event.getSource(),
-					availableResources.getNumFreeCpus(),
-					availableResources.getFreeMemInMbs());
+					event.getNumCpus(),
+					event.getAmountMemInMb());
 			trigger(objAvailableResourcesResponse, networkPort);
         	
         }
@@ -138,11 +145,16 @@ public final class ResourceManager extends ComponentDefinition {
     Handler<RequestResources.AvailableResourcesResponse> handleAvailableResourcesResponse = new Handler<RequestResources.AvailableResourcesResponse>() {
         @Override
         public void handle(RequestResources.AvailableResourcesResponse event) {
-			grouping.add(new ResourcesComparator(event.getNumCpus(), event
+         /// printing out for tracking reasons .. 
+        	System.out.println(" I am handling available resources response, event source is " + event.getSource() +
+        			" and event destination is " + event.getDestination() + " and i will try to compare to find the node with " +
+        			" the highest number of free resources ... " );
+        	
+        	grouping.add(new ResourcesComparator(event.getNumCpus(), event
 					.getAmountMemInMb(), event.getSource()));
 			// you received responses from all nodes
 			// but what if one of them didn't reply, should handle this ..
-			if (grouping.size() == 4) {
+			if (grouping.size() == probeSize) {
 				Object[] objArr = grouping.toArray();
 				Arrays.sort(objArr);
 
@@ -155,16 +167,21 @@ public final class ResourceManager extends ComponentDefinition {
 				trigger(objActualAllocationRequest, networkPort);
 				
 				// send to the next highest one
+				if(probeSize > 1)
+				{
 				RequestResources.ActualAllocationRequest objActualAllocationSecondRequest = new RequestResources.ActualAllocationRequest(
 						self,
 						((ResourcesComparator) objArr[1]).getNodeAddress(),
 						event.getNumCpus(), event.getAmountMemInMb());
 				trigger(objActualAllocationSecondRequest, networkPort);
-				
+				}
 				// Add the addresses of the nodes to which you send so that 
 				// you can cancel after receiving a success from any of them
 				sentRequestsAddresses.add(((ResourcesComparator) objArr[0]).getNodeAddress());
-				sentRequestsAddresses.add(((ResourcesComparator) objArr[1]).getNodeAddress());
+				if(probeSize > 1) sentRequestsAddresses.add(((ResourcesComparator) objArr[1]).getNodeAddress());
+				
+				// printing out the sent request addresses till now
+				System.out.println(" the send request addresses are " + sentRequestsAddresses.get(0));
 			}
         }
     };
@@ -175,7 +192,16 @@ public final class ResourceManager extends ComponentDefinition {
     Handler<RequestResources.ActualAllocationRequest> handleActualAllocationRequest = new Handler<RequestResources.ActualAllocationRequest>() {
         @Override
         public void handle(RequestResources.ActualAllocationRequest event) {
-			// when receiving this request, the node should check if it has
+			
+        	// Printing out results for tracking reasons 
+        	System.out.println("I am here at the actual allocation request with event source " + 
+        	event.getSource() + " and destination " + event.getDestination() + " and we are checking if "
+        	+  "we have enough resources for the allocation so that we allocate them " +
+        	" is canceled is " + isCanceled);
+        	
+        	
+        	
+        	// when receiving this request, the node should check if it has
 			// the requested resources, then allocate them and send a response
 			// back
 			if (!isCanceled && availableResources.isAvailable(event.getNumCpus(),
@@ -184,17 +210,24 @@ public final class ResourceManager extends ComponentDefinition {
 				// how does the node ensure that the resources are allocated for
 				// the exact requesting node ?? or is it just a simulation for the
 				// situation ?
+				
+				// before allocation
 				boolean success = availableResources.allocate(
 						event.getNumCpus(), event.getAmountMemInMb());
 
 				// trigger a response with success
 				RequestResources.Response objResponse = new RequestResources.Response(
-						self, event.getSource(), success);
+						self, event.getSource(), success, event.getNumCpus(), event.getAmountMemInMb());
 				trigger(objResponse, networkPort);					  
 			    
 			    // Set the amounts of cpus and amount of memory so that they can be released later
 			    numAllocatedCpus = event.getNumCpus();
 			    amountAllocatedMem = event.getAmountMemInMb();
+			    
+			    // Printing out results for tracking
+			   System.out.println("am here to print the success result " + success );
+			   System.out.println(self + " resources became " + availableResources.getNumFreeCpus() + " and " + availableResources.getFreeMemInMbs());
+			   
 			}
         }
     };
@@ -206,10 +239,21 @@ public final class ResourceManager extends ComponentDefinition {
     Handler<RequestResources.Response> handleResourceAllocationResponse = new Handler<RequestResources.Response>() {
         @Override
         public void handle(RequestResources.Response event) {
-           // if you receive a success from one of the nodes you sent to then
+         // print out results for tracking reasons 
+        	System.out.println(" Am here in the handle resource allocation response trying to know if the event succeeded or not "
+        		  + " am the event source " + event.getSource() + " and the event destination is " + event.getDestination() +
+        		  " and the success result is " + event.getSuccess() );
+        	
+        	// if you receive a success from one of the nodes you sent to then
            // you should cancel the request for the other node
         	if(event.getSuccess())
         	{
+        		// adding the obtained resources
+        		availableResources.incrementResources(event.getNumCpus(), event.getAmountMemInMb());
+        		
+        		// Print out to track the results
+        		System.out.println( self + "  have been allocated resources and currently i have " + 
+        		availableResources.getNumFreeCpus() + " and " + availableResources.getFreeMemInMbs());
         		// Check to whom you should send the cancel request
         		for(Address objAddress : sentRequestsAddresses)
         		{
@@ -219,6 +263,10 @@ public final class ResourceManager extends ComponentDefinition {
         				RequestResources.CancelRequest objCancel = new RequestResources.CancelRequest(self,
         						objAddress);
         				trigger(objCancel, networkPort);
+        				
+        				
+        				// print out to track the results 
+        				System.out.println("triggering cancel request to " + objAddress);
         			}
         		}
         		
@@ -238,6 +286,8 @@ public final class ResourceManager extends ComponentDefinition {
         @Override
         public void handle(RequestResources.CancelRequest event) {
            isCanceled = true;
+           // Print out results for tracking reasons
+           System.out.println(" canceled results is " + isCanceled);
         }
     };
     
@@ -245,7 +295,7 @@ public final class ResourceManager extends ComponentDefinition {
         @Override
         public void handle(CyclonSample event) {
             System.out.println("Received samples: " + event.getSample().size());
-            
+           
             // receive a new list of neighbors
             neighbours.clear();
             neighbours.addAll(event.getSample());
@@ -269,10 +319,13 @@ public final class ResourceManager extends ComponentDefinition {
             // 1. Select 4 random peers from the current neighbors
 			ArrayList<Address> selectedNeighbors = new ArrayList<Address>();
 			Random objRandom = new Random();
-			if (neighbours != null) {
-				for (int i = 0; i < 4; i++) {
+			if (neighbours != null && neighbours.size() > 0) {
+				for (int i = 0; i < probeSize; i++) {
+					// Shatha print out to check the problem source
+					System.out.println("This is the neighbors size " + neighbours.size());
 					selectedNeighbors.add(neighbours.get(objRandom
-							.nextInt(neighbours.size())));
+							.nextInt(neighbours.size())));	
+					
 				}
 			}
 			// 2. Send the Request to those selected four neighbors
@@ -282,10 +335,16 @@ public final class ResourceManager extends ComponentDefinition {
 							self, objAddress, event.getNumCpus(),
 							event.getMemoryInMbs());
 					trigger(objRequest, networkPort);
+					
+					// print out results for tracking reasons
+					System.out.println(self + " sending a request to one of the neighbors " + objAddress);
 				}
 			}
 			// 3. Set the time to hold resource value from the event
 			timeToHoldResource = event.getTimeToHoldResource();
+			
+			// print out resutls for tracking reasons
+			 System.out.println(" the time to hold resources is set to " + event.getTimeToHoldResource());
 			
         }
     };
