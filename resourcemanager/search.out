@@ -8395,3 +8395,633 @@ Peer with min num of free cpus: 6
 Peer with max amount of free mem in MB: 14000
 Peer with min amount of free mem in MB: 10000
 ###
+current time: 0
+---
+total number of peers: 1
+---
+Peer with max num of free cpus: 8
+Peer with min num of free cpus: 8
+Peer with max amount of free mem in MB: 12000
+Peer with min amount of free mem in MB: 12000
+###
+current time: 1
+---
+total number of peers: 2
+---
+Peer with max num of free cpus: 8
+Peer with min num of free cpus: 8
+Peer with max amount of free mem in MB: 12000
+Peer with min amount of free mem in MB: 12000
+###
+current time: 2
+---
+total number of peers: 3
+---
+Peer with max num of free cpus: 8
+Peer with min num of free cpus: 8
+Peer with max amount of free mem in MB: 12000
+Peer with min amount of free mem in MB: 12000
+###
+current time: 3
+---
+total number of peers: 3
+---
+Peer with max num of free cpus: 8
+Peer with min num of free cpus: 8
+Peer with max amount of free mem in MB: 12000
+Peer with min amount of free mem in MB: 12000
+###
+current time: 4
+---
+total number of peers: 3
+---
+Peer with max num of free cpus: 10
+Peer with min num of free cpus: 6
+Peer with max amount of free mem in MB: 14000
+Peer with min amount of free mem in MB: 10000
+###
+current time: 0
+---
+total number of peers: 1
+---
+Peer with max num of free cpus: 8
+Peer with min num of free cpus: 8
+Peer with max amount of free mem in MB: 12000
+Peer with min amount of free mem in MB: 12000
+###
+current time: 1
+---
+total number of peers: 2
+---
+Peer with max num of free cpus: 8
+Peer with min num of free cpus: 8
+Peer with max amount of free mem in MB: 12000
+Peer with min amount of free mem in MB: 12000
+###
+current time: 2
+---
+total number of peers: 3
+---
+Peer with max num of free cpus: 8
+Peer with min num of free cpus: 8
+Peer with max amount of free mem in MB: 12000
+Peer with min amount of free mem in MB: 12000
+###
+current time: 3
+---
+total number of peers: 3
+---
+Peer with max num of free cpus: 8
+Peer with min num of free cpus: 8
+Peer with max amount of free mem in MB: 12000
+Peer with min amount of free mem in MB: 12000
+###
+current time: 4
+---
+total number of peers: 3
+---
+Peer with max num of free cpus: 8
+Peer with min num of free cpus: 6
+Peer with max amount of free mem in MB: 12000
+Peer with min amount of free mem in MB: 10000
+###
+current time: 0
+---
+total number of peers: 1
+---
+Peer with max num of free cpus: 8
+Peer with min num of free cpus: 8
+Peer with max amount of free mem in MB: 12000
+Peer with min amount of free mem in MB: 12000
+###
+current time: 1
+---
+total number of peers: 2
+---
+Peer with max num of free cpus: 8
+Peer with min num of free cpus: 8
+Peer with max amount of free mem in MB: 12000
+Peer with min amount of free mem in MB: 12000
+###
+current time: 2
+---
+total number of peers: 3
+---
+Peer with max num of free cpus: 8
+Peer with min num of free cpus: 8
+Peer with max amount of free mem in MB: 12000
+Peer with min amount of free mem in MB: 12000
+###
+current time: 3
+---
+total number of peers: 3
+---
+Peer with max num of free cpus: 8
+Peer with min num of free cpus: 8
+Peer with max amount of free mem in MB: 12000
+Peer with min amount of free mem in MB: 12000
+###
+current time: 4
+---
+total number of peers: 3
+---
+Peer with max num of free cpus: 6
+Peer with min num of free cpus: 6
+Peer with max amount of free mem in MB: 10000
+Peer with min amount of free mem in MB: 10000
+###
+current time: 0
+---
+total number of peers: 1
+---
+Peer with max num of free cpus: 8
+Peer with min num of free cpus: 8
+Peer with max amount of free mem in MB: 12000
+Peer with min amount of free mem in MB: 12000
+###
+current time: 1
+---
+total number of peers: 2
+---
+Peer with max num of free cpus: 8
+Peer with min num of free cpus: 8
+Peer with max amount of free mem in MB: 12000
+Peer with min amount of free mem in MB: 12000
+###
+current time: 2
+---
+total number of peers: 3
+---
+Peer with max num of free cpus: 8
+Peer with min num of free cpus: 8
+Peer with max amount of free mem in MB: 12000
+Peer with min amount of free mem in MB: 12000
+###
+current time: 3
+---
+total number of peers: 3
+---
+Peer with max num of free cpus: 8
+Peer with min num of free cpus: 8
+Peer with max amount of free mem in MB: 12000
+Peer with min amount of free mem in MB: 12000
+###
+current time: 4
+---
+total number of peers: 3
+---
+Peer with max num of free cpus: 8
+Peer with min num of free cpus: 6
+Peer with max amount of free mem in MB: 12000
+Peer with min amount of free mem in MB: 10000
+###
+current time: 0
+---
+total number of peers: 1
+---
+Peer with max num of free cpus: 8
+Peer with min num of free cpus: 8
+Peer with max amount of free mem in MB: 12000
+Peer with min amount of free mem in MB: 12000
+###
+current time: 1
+---
+total number of peers: 2
+---
+Peer with max num of free cpus: 8
+Peer with min num of free cpus: 8
+Peer with max amount of free mem in MB: 12000
+Peer with min amount of free mem in MB: 12000
+###
+current time: 2
+---
+total number of peers: 3
+---
+Peer with max num of free cpus: 8
+Peer with min num of free cpus: 8
+Peer with max amount of free mem in MB: 12000
+Peer with min amount of free mem in MB: 12000
+###
+current time: 3
+---
+total number of peers: 3
+---
+Peer with max num of free cpus: 8
+Peer with min num of free cpus: 8
+Peer with max amount of free mem in MB: 12000
+Peer with min amount of free mem in MB: 12000
+###
+current time: 4
+---
+total number of peers: 3
+---
+Peer with max num of free cpus: 8
+Peer with min num of free cpus: 4
+Peer with max amount of free mem in MB: 12000
+Peer with min amount of free mem in MB: 8000
+###
+current time: 0
+---
+total number of peers: 1
+---
+Peer with max num of free cpus: 8
+Peer with min num of free cpus: 8
+Peer with max amount of free mem in MB: 12000
+Peer with min amount of free mem in MB: 12000
+###
+current time: 1
+---
+total number of peers: 2
+---
+Peer with max num of free cpus: 8
+Peer with min num of free cpus: 8
+Peer with max amount of free mem in MB: 12000
+Peer with min amount of free mem in MB: 12000
+###
+current time: 2
+---
+total number of peers: 3
+---
+Peer with max num of free cpus: 8
+Peer with min num of free cpus: 8
+Peer with max amount of free mem in MB: 12000
+Peer with min amount of free mem in MB: 12000
+###
+current time: 3
+---
+total number of peers: 3
+---
+Peer with max num of free cpus: 8
+Peer with min num of free cpus: 8
+Peer with max amount of free mem in MB: 12000
+Peer with min amount of free mem in MB: 12000
+###
+current time: 4
+---
+total number of peers: 3
+---
+Peer with max num of free cpus: 8
+Peer with min num of free cpus: 4
+Peer with max amount of free mem in MB: 12000
+Peer with min amount of free mem in MB: 8000
+###
+current time: 0
+---
+total number of peers: 1
+---
+Peer with max num of free cpus: 8
+Peer with min num of free cpus: 8
+Peer with max amount of free mem in MB: 12000
+Peer with min amount of free mem in MB: 12000
+###
+current time: 1
+---
+total number of peers: 2
+---
+Peer with max num of free cpus: 8
+Peer with min num of free cpus: 8
+Peer with max amount of free mem in MB: 12000
+Peer with min amount of free mem in MB: 12000
+###
+current time: 2
+---
+total number of peers: 3
+---
+Peer with max num of free cpus: 8
+Peer with min num of free cpus: 8
+Peer with max amount of free mem in MB: 12000
+Peer with min amount of free mem in MB: 12000
+###
+current time: 3
+---
+total number of peers: 3
+---
+Peer with max num of free cpus: 8
+Peer with min num of free cpus: 8
+Peer with max amount of free mem in MB: 12000
+Peer with min amount of free mem in MB: 12000
+###
+current time: 4
+---
+total number of peers: 3
+---
+Peer with max num of free cpus: 8
+Peer with min num of free cpus: 4
+Peer with max amount of free mem in MB: 12000
+Peer with min amount of free mem in MB: 8000
+###
+current time: 0
+---
+total number of peers: 1
+---
+Peer with max num of free cpus: 8
+Peer with min num of free cpus: 8
+Peer with max amount of free mem in MB: 12000
+Peer with min amount of free mem in MB: 12000
+###
+current time: 1
+---
+total number of peers: 2
+---
+Peer with max num of free cpus: 8
+Peer with min num of free cpus: 8
+Peer with max amount of free mem in MB: 12000
+Peer with min amount of free mem in MB: 12000
+###
+current time: 2
+---
+total number of peers: 3
+---
+Peer with max num of free cpus: 8
+Peer with min num of free cpus: 8
+Peer with max amount of free mem in MB: 12000
+Peer with min amount of free mem in MB: 12000
+###
+current time: 3
+---
+total number of peers: 3
+---
+Peer with max num of free cpus: 8
+Peer with min num of free cpus: 8
+Peer with max amount of free mem in MB: 12000
+Peer with min amount of free mem in MB: 12000
+###
+current time: 4
+---
+total number of peers: 3
+---
+Peer with max num of free cpus: 8
+Peer with min num of free cpus: 0
+Peer with max amount of free mem in MB: 12000
+Peer with min amount of free mem in MB: 4000
+###
+current time: 0
+---
+total number of peers: 1
+---
+Peer with max num of free cpus: 8
+Peer with min num of free cpus: 8
+Peer with max amount of free mem in MB: 12000
+Peer with min amount of free mem in MB: 12000
+###
+current time: 1
+---
+total number of peers: 2
+---
+Peer with max num of free cpus: 8
+Peer with min num of free cpus: 8
+Peer with max amount of free mem in MB: 12000
+Peer with min amount of free mem in MB: 12000
+###
+current time: 2
+---
+total number of peers: 3
+---
+Peer with max num of free cpus: 8
+Peer with min num of free cpus: 8
+Peer with max amount of free mem in MB: 12000
+Peer with min amount of free mem in MB: 12000
+###
+current time: 3
+---
+total number of peers: 3
+---
+Peer with max num of free cpus: 8
+Peer with min num of free cpus: 8
+Peer with max amount of free mem in MB: 12000
+Peer with min amount of free mem in MB: 12000
+###
+current time: 4
+---
+total number of peers: 3
+---
+Peer with max num of free cpus: 6
+Peer with min num of free cpus: 6
+Peer with max amount of free mem in MB: 10000
+Peer with min amount of free mem in MB: 10000
+###
+current time: 0
+---
+total number of peers: 1
+---
+Peer with max num of free cpus: 8
+Peer with min num of free cpus: 8
+Peer with max amount of free mem in MB: 12000
+Peer with min amount of free mem in MB: 12000
+###
+current time: 1
+---
+total number of peers: 2
+---
+Peer with max num of free cpus: 8
+Peer with min num of free cpus: 8
+Peer with max amount of free mem in MB: 12000
+Peer with min amount of free mem in MB: 12000
+###
+current time: 2
+---
+total number of peers: 3
+---
+Peer with max num of free cpus: 8
+Peer with min num of free cpus: 8
+Peer with max amount of free mem in MB: 12000
+Peer with min amount of free mem in MB: 12000
+###
+current time: 3
+---
+total number of peers: 3
+---
+Peer with max num of free cpus: 8
+Peer with min num of free cpus: 8
+Peer with max amount of free mem in MB: 12000
+Peer with min amount of free mem in MB: 12000
+###
+current time: 4
+---
+total number of peers: 3
+---
+Peer with max num of free cpus: 8
+Peer with min num of free cpus: 8
+Peer with max amount of free mem in MB: 12000
+Peer with min amount of free mem in MB: 12000
+###
+current time: 0
+---
+total number of peers: 1
+---
+Peer with max num of free cpus: 8
+Peer with min num of free cpus: 8
+Peer with max amount of free mem in MB: 12000
+Peer with min amount of free mem in MB: 12000
+###
+current time: 1
+---
+total number of peers: 2
+---
+Peer with max num of free cpus: 8
+Peer with min num of free cpus: 8
+Peer with max amount of free mem in MB: 12000
+Peer with min amount of free mem in MB: 12000
+###
+current time: 2
+---
+total number of peers: 3
+---
+Peer with max num of free cpus: 8
+Peer with min num of free cpus: 8
+Peer with max amount of free mem in MB: 12000
+Peer with min amount of free mem in MB: 12000
+###
+current time: 3
+---
+total number of peers: 3
+---
+Peer with max num of free cpus: 8
+Peer with min num of free cpus: 8
+Peer with max amount of free mem in MB: 12000
+Peer with min amount of free mem in MB: 12000
+###
+current time: 4
+---
+total number of peers: 3
+---
+Peer with max num of free cpus: 8
+Peer with min num of free cpus: 4
+Peer with max amount of free mem in MB: 12000
+Peer with min amount of free mem in MB: 8000
+###
+current time: 0
+---
+total number of peers: 1
+---
+Peer with max num of free cpus: 8
+Peer with min num of free cpus: 8
+Peer with max amount of free mem in MB: 12000
+Peer with min amount of free mem in MB: 12000
+###
+current time: 1
+---
+total number of peers: 2
+---
+Peer with max num of free cpus: 8
+Peer with min num of free cpus: 8
+Peer with max amount of free mem in MB: 12000
+Peer with min amount of free mem in MB: 12000
+###
+current time: 2
+---
+total number of peers: 3
+---
+Peer with max num of free cpus: 8
+Peer with min num of free cpus: 8
+Peer with max amount of free mem in MB: 12000
+Peer with min amount of free mem in MB: 12000
+###
+current time: 3
+---
+total number of peers: 3
+---
+Peer with max num of free cpus: 8
+Peer with min num of free cpus: 8
+Peer with max amount of free mem in MB: 12000
+Peer with min amount of free mem in MB: 12000
+###
+current time: 4
+---
+total number of peers: 3
+---
+Peer with max num of free cpus: 8
+Peer with min num of free cpus: 6
+Peer with max amount of free mem in MB: 12000
+Peer with min amount of free mem in MB: 10000
+###
+current time: 0
+---
+total number of peers: 1
+---
+Peer with max num of free cpus: 8
+Peer with min num of free cpus: 8
+Peer with max amount of free mem in MB: 12000
+Peer with min amount of free mem in MB: 12000
+###
+current time: 1
+---
+total number of peers: 2
+---
+Peer with max num of free cpus: 8
+Peer with min num of free cpus: 8
+Peer with max amount of free mem in MB: 12000
+Peer with min amount of free mem in MB: 12000
+###
+current time: 2
+---
+total number of peers: 3
+---
+Peer with max num of free cpus: 8
+Peer with min num of free cpus: 8
+Peer with max amount of free mem in MB: 12000
+Peer with min amount of free mem in MB: 12000
+###
+current time: 3
+---
+total number of peers: 3
+---
+Peer with max num of free cpus: 8
+Peer with min num of free cpus: 8
+Peer with max amount of free mem in MB: 12000
+Peer with min amount of free mem in MB: 12000
+###
+current time: 4
+---
+total number of peers: 3
+---
+Peer with max num of free cpus: 8
+Peer with min num of free cpus: 8
+Peer with max amount of free mem in MB: 12000
+Peer with min amount of free mem in MB: 12000
+###
+current time: 0
+---
+total number of peers: 1
+---
+Peer with max num of free cpus: 8
+Peer with min num of free cpus: 8
+Peer with max amount of free mem in MB: 12000
+Peer with min amount of free mem in MB: 12000
+###
+current time: 1
+---
+total number of peers: 2
+---
+Peer with max num of free cpus: 8
+Peer with min num of free cpus: 8
+Peer with max amount of free mem in MB: 12000
+Peer with min amount of free mem in MB: 12000
+###
+current time: 2
+---
+total number of peers: 3
+---
+Peer with max num of free cpus: 8
+Peer with min num of free cpus: 8
+Peer with max amount of free mem in MB: 12000
+Peer with min amount of free mem in MB: 12000
+###
+current time: 3
+---
+total number of peers: 3
+---
+Peer with max num of free cpus: 8
+Peer with min num of free cpus: 8
+Peer with max amount of free mem in MB: 12000
+Peer with min amount of free mem in MB: 12000
+###
+current time: 4
+---
+total number of peers: 3
+---
+Peer with max num of free cpus: 8
+Peer with min num of free cpus: 6
+Peer with max amount of free mem in MB: 12000
+Peer with min amount of free mem in MB: 10000
+###

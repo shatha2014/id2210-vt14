@@ -6,21 +6,12 @@ import common.simulation.RequestResource;
 import cyclon.system.peer.cyclon.CyclonSample;
 import cyclon.system.peer.cyclon.CyclonSamplePort;
 import cyclon.system.peer.cyclon.PeerDescriptor;
-
 import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.Collections;
 import java.util.Comparator;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
 import java.util.Random;
-
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-
-import resourcemanager.system.peer.rm.RequestResources.RenewTimeout;
-import resourcemanager.system.peer.rm.RequestResources.RequestTimeout;
 import se.sics.kompics.ComponentDefinition;
 import se.sics.kompics.Handler;
 import se.sics.kompics.Negative;
@@ -43,12 +34,15 @@ import tman.system.peer.tman.TManSamplePort;
 public final class ResourceManager extends ComponentDefinition {
 
     private static final Logger logger = LoggerFactory.getLogger(ResourceManager.class);
+    
     Positive<RmPort> indexPort = positive(RmPort.class);
     Positive<Network> networkPort = positive(Network.class);
     Positive<Timer> timerPort = positive(Timer.class);
     Negative<Web> webPort = negative(Web.class);
     Positive<CyclonSamplePort> cyclonSamplePort = positive(CyclonSamplePort.class);
     Positive<TManSamplePort> tmanPort = positive(TManSamplePort.class);
+    
+    
     ArrayList<Address> neighbours = new ArrayList<Address>();
     private Address self;
     private RmConfiguration configuration;
@@ -66,7 +60,7 @@ public final class ResourceManager extends ComponentDefinition {
     };
     // Shatha Review
     private  int timeToHoldResource;
-    private int probeSize = 1; 
+    private int PROBESIZE = 1; 
 
 	
     public ResourceManager() {
@@ -82,7 +76,6 @@ public final class ResourceManager extends ComponentDefinition {
         subscribe(handleActualAllocationRequest, networkPort);
         subscribe(handleAvailableResourcesResponse, networkPort);
         subscribe(handleCancelRequest, networkPort);
-        
         
     }
 	
@@ -104,27 +97,55 @@ public final class ResourceManager extends ComponentDefinition {
     };
 
 
-    // Shatha question - discuss this with jasper
-    Handler<UpdateTimeout> handleUpdateTimeout = new Handler<UpdateTimeout>() {
+    // Step 1: on receiving a request, the node will send a probe randomly to a group
+    // of its neighbours asking them about the availability of the requested resources in the scenario
+    Handler<RequestResource> handleRequestResource = new Handler<RequestResource>() {
         @Override
-        public void handle(UpdateTimeout event) {
-
-            // pick a random neighbour to ask for index updates from. 
-            // You can change this policy if you want to.
-            // Maybe a gradient neighbour who is closer to the leader?
-            if (neighbours.isEmpty()) {
-                return;
-            }
-            Address dest = neighbours.get(random.nextInt(neighbours.size()));
+        public void handle(RequestResource event) {
+            
+            System.out.println("HANDLE REQUEST RESOURCE: Sending Allocate resources: " + event.getNumCpus() + " + " + event.getMemoryInMbs());
+            
+            // Shatha - Review
+            // 1. Select PROBESIZE random peers from the current neighbors
+			ArrayList<Address> selectedNeighbors = new ArrayList<Address>();
+			 long seed = System.currentTimeMillis();
+			Random objRandom = new Random(seed);
+			if (neighbours != null && neighbours.size() > 0) {
+				for (int i = 0; i < PROBESIZE; i++) {
+					selectedNeighbors.add(neighbours.get(objRandom
+							.nextInt(neighbours.size())));	
+				}
+			}
+			
+			// 2. Send the Request to those selected neighbors
+			if (selectedNeighbors != null) {
+				for (Address objAddress : selectedNeighbors) {
+					RequestResources.Request objRequest = new RequestResources.Request(
+							self, objAddress, event.getNumCpus(),
+							event.getMemoryInMbs());
+					trigger(objRequest, networkPort);
+					
+					// print out results for tracking reasons
+					System.out.println("[" + self.getId() + "]" + " sending a request to the following neighbor [" + objAddress.getId() + "]");
+				}
+			}
+			
+			// 3. Set the time to hold resource value from the event
+			timeToHoldResource = event.getTimeToHoldResource();
+			
         }
     };
     
+    
+    
+    // Step 2: On receiving a request, the node will send a response with its current resources 
+    // so that the original node can decide the nodes with highest free resources 
     Handler<RequestResources.Request> handleResourceAllocationRequest = new Handler<RequestResources.Request>() {
         @Override
         public void handle(RequestResources.Request event) {
         	// Printing out on the screen for tracking purpose   
-        	System.out.println("I am here at Resource allocation request handler : " +
-                 "I am : " + event.getDestination() + " i have a request from : " + event.getSource() +
+        	System.out.println("HANDLE RESORUCE ALLOCATION REQUEST: " +
+                 "[" + event.getDestination().getId() + "]" + " received a request from : [" + event.getSource().getId() + "]" +
                  " and i have the following resources " + availableResources.getNumFreeCpus() + " and " + availableResources.getFreeMemInMbs());
         	  
 			// Shatha - Review
@@ -139,22 +160,23 @@ public final class ResourceManager extends ComponentDefinition {
         }
     };
     
-    // Shatha - Review 
+    // Step 3: The original node will start collecting responses from the nodes it probed
+    // to decide the node with the highest number of resources
     private ArrayList<ResourcesComparator> grouping = new ArrayList<ResourcesComparator>();
     private ArrayList<Address> sentRequestsAddresses = new ArrayList<Address>();
     Handler<RequestResources.AvailableResourcesResponse> handleAvailableResourcesResponse = new Handler<RequestResources.AvailableResourcesResponse>() {
         @Override
         public void handle(RequestResources.AvailableResourcesResponse event) {
          /// printing out for tracking reasons .. 
-        	System.out.println(" I am handling available resources response, event source is " + event.getSource() +
-        			" and event destination is " + event.getDestination() + " and i will try to compare to find the node with " +
+        	System.out.println("HANDLE AVAILABLE RESOURCES RESPONSE, event source is [" + event.getSource().getId() + "]" +
+        			" and event destination is [" + event.getDestination().getId() + "]" + " and i will try to compare to find the node with " +
         			" the highest number of free resources ... " );
         	
         	grouping.add(new ResourcesComparator(event.getNumCpus(), event
 					.getAmountMemInMb(), event.getSource()));
 			// you received responses from all nodes
 			// but what if one of them didn't reply, should handle this ..
-			if (grouping.size() == probeSize) {
+			if (grouping.size() == PROBESIZE) {
 				Object[] objArr = grouping.toArray();
 				Arrays.sort(objArr);
 
@@ -167,7 +189,7 @@ public final class ResourceManager extends ComponentDefinition {
 				trigger(objActualAllocationRequest, networkPort);
 				
 				// send to the next highest one
-				if(probeSize > 1)
+				if(PROBESIZE > 1)
 				{
 				RequestResources.ActualAllocationRequest objActualAllocationSecondRequest = new RequestResources.ActualAllocationRequest(
 						self,
@@ -178,15 +200,15 @@ public final class ResourceManager extends ComponentDefinition {
 				// Add the addresses of the nodes to which you send so that 
 				// you can cancel after receiving a success from any of them
 				sentRequestsAddresses.add(((ResourcesComparator) objArr[0]).getNodeAddress());
-				if(probeSize > 1) sentRequestsAddresses.add(((ResourcesComparator) objArr[1]).getNodeAddress());
-				
-				// printing out the sent request addresses till now
-				System.out.println(" the send request addresses are " + sentRequestsAddresses.get(0));
+				if(PROBESIZE > 1) sentRequestsAddresses.add(((ResourcesComparator) objArr[1]).getNodeAddress());
+
 			}
         }
     };
     
-    // Shatha Review
+    // Step 4: On receiving an allocation request, the node should check first if the request is not canceled
+    // since the original node might cancel the request if it has been allocated resources from another node 
+    // and then if the resources were available, the node will allocate them for the original node
     private int numAllocatedCpus = 0;
     private int amountAllocatedMem = 0;
     Handler<RequestResources.ActualAllocationRequest> handleActualAllocationRequest = new Handler<RequestResources.ActualAllocationRequest>() {
@@ -194,8 +216,8 @@ public final class ResourceManager extends ComponentDefinition {
         public void handle(RequestResources.ActualAllocationRequest event) {
 			
         	// Printing out results for tracking reasons 
-        	System.out.println("I am here at the actual allocation request with event source " + 
-        	event.getSource() + " and destination " + event.getDestination() + " and we are checking if "
+        	System.out.println("HANDLE ACTUAL ALLOCATION REQUEST - event source [" + 
+        	event.getSource().getId() + "] and destination [" + event.getDestination().getId() + "] and we are checking if "
         	+  "we have enough resources for the allocation so that we allocate them " +
         	" is canceled is " + isCanceled);
         	
@@ -206,10 +228,6 @@ public final class ResourceManager extends ComponentDefinition {
 			// back
 			if (!isCanceled && availableResources.isAvailable(event.getNumCpus(),
 					event.getAmountMemInMb())) {
-				// Shatha - question
-				// how does the node ensure that the resources are allocated for
-				// the exact requesting node ?? or is it just a simulation for the
-				// situation ?
 				
 				// before allocation
 				boolean success = availableResources.allocate(
@@ -225,35 +243,29 @@ public final class ResourceManager extends ComponentDefinition {
 			    amountAllocatedMem = event.getAmountMemInMb();
 			    
 			    // Printing out results for tracking
-			   System.out.println("am here to print the success result " + success );
-			   System.out.println(self + " resources became " + availableResources.getNumFreeCpus() + " and " + availableResources.getFreeMemInMbs());
+			   System.out.println("Printing the success result " + success );
 			   
 			}
         }
     };
     
-
-    
-    
-    // Shatha Review 
+    // Step 5: when the original node receives a response from other node, if the result is success
+    // then it has to send cancel request for the other node if it sent it to another node
+    // otherwise print out a message that the resources have been allocated
     Handler<RequestResources.Response> handleResourceAllocationResponse = new Handler<RequestResources.Response>() {
         @Override
         public void handle(RequestResources.Response event) {
          // print out results for tracking reasons 
-        	System.out.println(" Am here in the handle resource allocation response trying to know if the event succeeded or not "
-        		  + " am the event source " + event.getSource() + " and the event destination is " + event.getDestination() +
-        		  " and the success result is " + event.getSuccess() );
+        	System.out.println("HANDLE RESOURCE ALLOCATION RESPONSE - trying to know if the event succeeded or not "
+        		  + " event source [" + event.getSource().getId() + "] and the event destination is [" + event.getDestination().getId() +
+        		  "] and the success result is " + event.getSuccess() );
         	
         	// if you receive a success from one of the nodes you sent to then
            // you should cancel the request for the other node
         	if(event.getSuccess())
         	{
-        		// adding the obtained resources
-        		availableResources.incrementResources(event.getNumCpus(), event.getAmountMemInMb());
+ 			   System.out.println("RESOURCES HAVE BEEN ALLOCATED FOR [" + self.getId() + "]");
         		
-        		// Print out to track the results
-        		System.out.println( self + "  have been allocated resources and currently i have " + 
-        		availableResources.getNumFreeCpus() + " and " + availableResources.getFreeMemInMbs());
         		// Check to whom you should send the cancel request
         		for(Address objAddress : sentRequestsAddresses)
         		{
@@ -266,31 +278,33 @@ public final class ResourceManager extends ComponentDefinition {
         				
         				
         				// print out to track the results 
-        				System.out.println("triggering cancel request to " + objAddress);
+        				System.out.println("triggering cancel request to [" + objAddress.getId() + "]");
         			}
         		}
         		
         		// Schedule a periodic time event to ensure that the sender doesn't reclaim the resources from you
-        	  //  SchedulePeriodicTimeout objPeriodicTimeout = new SchedulePeriodicTimeout(timeToHoldResource, configuration.getPeriod());
-        	  //  objPeriodicTimeout.setTimeoutEvent(new RenewTimeout(objPeriodicTimeout));
-        	  //  trigger(objPeriodicTimeout, timerPort);
-                       	   
-        	
+        	    SchedulePeriodicTimeout objPeriodicTimeout = new SchedulePeriodicTimeout(configuration.getPeriod(), timeToHoldResource);
+        	    objPeriodicTimeout.setTimeoutEvent(new RenewTimeout(objPeriodicTimeout));
+        	    trigger(objPeriodicTimeout, timerPort);
+        	    
+        	    ScheduleTimeout rst = new ScheduleTimeout(timeToHoldResource + 1000);
+        		rst.setTimeoutEvent(new AllocateResourcesTimeout(rst));
         	}
         }
     };
     
-    // Shatha Review 
+    // Step 6: if a node received a cancel request, it should set the variable isCanceled, that can 
+    // be used later to decide if it should allocate resources or not 
     private boolean isCanceled = false;
     Handler<RequestResources.CancelRequest> handleCancelRequest= new Handler<RequestResources.CancelRequest>() {
         @Override
         public void handle(RequestResources.CancelRequest event) {
            isCanceled = true;
-           // Print out results for tracking reasons
-           System.out.println(" canceled results is " + isCanceled);
+           System.out.println("[" + self.getId() + "] received a cancel request from [" + event.getSource().getId() + "]");
         }
     };
     
+    // Handling cyclon samples and printing out a message
     Handler<CyclonSample> handleCyclonSample = new Handler<CyclonSample>() {
         @Override
         public void handle(CyclonSample event) {
@@ -303,52 +317,44 @@ public final class ResourceManager extends ComponentDefinition {
         }
     };
 	
-    Handler<RequestResource> handleRequestResource = new Handler<RequestResource>() {
+
+    // If the node receives a renew timeout from the holder of resources 
+    // then it can renew, otherwise it should release the resources 
+    private boolean isActive = false;
+    Handler<RenewTimeout> handleRenewTimeout = new Handler<RenewTimeout>() {
         @Override
-        public void handle(RequestResource event) {
-            
-            System.out.println("Allocate resources: " + event.getNumCpus() + " + " + event.getMemoryInMbs());
-            // TODO: Ask for resources from neighbors
-            // by sending a ResourceRequest
-            // RequestResources.Request req = new RequestResources.Request(self, dest,
-            // event.getNumCpus(), event.getAmountMem());
-            // trigger(req, networkPort);
-            
-            
-            // Shatha - Review
-            // 1. Select 4 random peers from the current neighbors
-			ArrayList<Address> selectedNeighbors = new ArrayList<Address>();
-			Random objRandom = new Random();
-			if (neighbours != null && neighbours.size() > 0) {
-				for (int i = 0; i < probeSize; i++) {
-					// Shatha print out to check the problem source
-					System.out.println("This is the neighbors size " + neighbours.size());
-					selectedNeighbors.add(neighbours.get(objRandom
-							.nextInt(neighbours.size())));	
-					
-				}
-			}
-			// 2. Send the Request to those selected four neighbors
-			if (selectedNeighbors != null) {
-				for (Address objAddress : selectedNeighbors) {
-					RequestResources.Request objRequest = new RequestResources.Request(
-							self, objAddress, event.getNumCpus(),
-							event.getMemoryInMbs());
-					trigger(objRequest, networkPort);
-					
-					// print out results for tracking reasons
-					System.out.println(self + " sending a request to one of the neighbors " + objAddress);
-				}
-			}
-			// 3. Set the time to hold resource value from the event
-			timeToHoldResource = event.getTimeToHoldResource();
-			
-			// print out resutls for tracking reasons
-			 System.out.println(" the time to hold resources is set to " + event.getTimeToHoldResource());
-			
+        public void handle(RenewTimeout event) {
+           // 
+           isActive = true;
         }
     };
     
+    Handler<AllocateResourcesTimeout> handleAllocateResourcesTimeout= new Handler<AllocateResourcesTimeout>() {
+        @Override
+        public void handle(AllocateResourcesTimeout event) {
+          if(!isActive)
+          {
+        	 // availableResources.release(numAllocatedCpus, amountAllocatedMem);
+        	//  System.out.println("[" + self.getId() + "]" + " is releasing resources ");
+          }
+        }
+    };
+    
+    
+    // Shatha question - discuss this with jasper
+    Handler<UpdateTimeout> handleUpdateTimeout = new Handler<UpdateTimeout>() {
+        @Override
+        public void handle(UpdateTimeout event) {
+
+            // pick a random neighbour to ask for index updates from. 
+            // You can change this policy if you want to.
+            // Maybe a gradient neighbour who is closer to the leader?
+            if (neighbours.isEmpty()) {
+                return;
+            }
+            Address dest = neighbours.get(random.nextInt(neighbours.size()));
+        }
+    };
     
     
     

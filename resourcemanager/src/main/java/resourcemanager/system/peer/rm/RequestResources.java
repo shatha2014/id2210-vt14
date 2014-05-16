@@ -142,12 +142,5 @@ public class RequestResources  {
         }
     }
     
-    // Shatha Review
-    public class RenewTimeout extends Timeout {
-
-    	public RenewTimeout(SchedulePeriodicTimeout request) {
-    		super(request);
-    	}
-
-    }
+   
 }
