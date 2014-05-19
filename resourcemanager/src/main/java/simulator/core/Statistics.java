@@ -14,7 +14,9 @@ import java.util.List;
  */
 public class Statistics {
 
-	private static Statistics instance;
+	private static Statistics sinlgeResourceInstance;
+	
+	private static Statistics batchResourceInstance;
 	
 	private List<Long> allocationTimes;
 	
@@ -28,10 +30,16 @@ public class Statistics {
 	}
 	
 	
-	public static Statistics getInstance() {
-		if(instance == null)
-			instance = new Statistics();
-		return instance;
+	public static Statistics getSingleResourceInstance() {
+		if(sinlgeResourceInstance == null)
+			sinlgeResourceInstance = new Statistics();
+		return sinlgeResourceInstance;
+	}
+	
+	public static Statistics getBatchResourceInstance() {
+		if(batchResourceInstance == null)
+			batchResourceInstance = new Statistics();
+		return batchResourceInstance;
 	}
 	
 	public void addTime(Long time) {
@@ -51,6 +59,7 @@ public class Statistics {
 	}
 	
 	public Long getNinetyNinth() {
+		Collections.sort(this.allocationTimes);
 		Long sum = new Long(0);
 		  if(!allocationTimes.isEmpty()) {
 			int amount = allocationTimes.size()/100;
