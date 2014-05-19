@@ -334,8 +334,8 @@ public final class ResourceManager extends ComponentDefinition {
         public void handle(AllocateResourcesTimeout event) {
           if(!isActive)
           {
-        	 // availableResources.release(numAllocatedCpus, amountAllocatedMem);
-        	//  System.out.println("[" + self.getId() + "]" + " is releasing resources ");
+        	  availableResources.release(numAllocatedCpus, amountAllocatedMem);
+        	  System.out.println("[" + self.getId() + "]" + " is releasing resources ");
           }
         }
     };
