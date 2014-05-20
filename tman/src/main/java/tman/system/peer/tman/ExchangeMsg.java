@@ -10,14 +10,16 @@ import se.sics.kompics.timer.Timeout;
 
 public class ExchangeMsg {
 
+	// Shatha Review
+	// Changes to replace DescriptorBuffer with TManDescriptorBuffer
     public static class Request extends Message {
 
         private static final long serialVersionUID = 8493601671018888143L;
         private final UUID requestId;
-        private final DescriptorBuffer randomBuffer;
+        private final TManDescriptorBuffer randomBuffer;
 
 
-        public Request(UUID requestId, DescriptorBuffer randomBuffer, Address source, 
+        public Request(UUID requestId, TManDescriptorBuffer randomBuffer, Address source, 
                 Address destination) {
             super(source, destination);
             this.requestId = requestId;
@@ -30,7 +32,7 @@ public class ExchangeMsg {
         }
 
         
-        public DescriptorBuffer getRandomBuffer() {
+        public TManDescriptorBuffer getRandomBuffer() {
             return randomBuffer;
         }
 
@@ -44,10 +46,10 @@ public class ExchangeMsg {
 
         private static final long serialVersionUID = -5022051054665787770L;
         private final UUID requestId;
-        private final DescriptorBuffer selectedBuffer;
+        private final TManDescriptorBuffer selectedBuffer;
 
 
-        public Response(UUID requestId, DescriptorBuffer selectedBuffer, Address source, Address destination) {
+        public Response(UUID requestId, TManDescriptorBuffer selectedBuffer, Address source, Address destination) {
             super(source, destination);
             this.requestId = requestId;
             this.selectedBuffer = selectedBuffer;
@@ -59,7 +61,7 @@ public class ExchangeMsg {
         }
 
 
-        public DescriptorBuffer getSelectedBuffer() {
+        public TManDescriptorBuffer getSelectedBuffer() {
             return selectedBuffer;
         }
 
