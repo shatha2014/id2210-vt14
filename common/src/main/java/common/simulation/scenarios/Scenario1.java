@@ -13,12 +13,16 @@ public class Scenario1 extends Scenario {
                                 uniform(0, Integer.MAX_VALUE), 
                                 constant(8), constant(12000)
                              );
+//			raise(300, Operations.peerJoin(), 
+//                    uniform(0, Integer.MAX_VALUE), 
+//                    uniform(2, 8), uniform(4000,16000)
+//                 );
 		}};
                 
 		StochasticProcess process1 = new StochasticProcess() {{
 			eventInterArrivalTime(constant(100));
 			// Shatha modification, it was 100
-			raise(500, Operations.requestResources(), 
+			raise(5000, Operations.requestResources(), 
                                 uniform(0, Integer.MAX_VALUE),
                                 constant(2), constant(2000),
                                 constant(1000*60*1) // 1 minute

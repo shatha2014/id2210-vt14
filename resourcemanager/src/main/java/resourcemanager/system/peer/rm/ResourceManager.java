@@ -382,7 +382,7 @@ public final class ResourceManager extends ComponentDefinition {
     Handler<TManSample> handleTManSample = new Handler<TManSample>() {
         @Override
         public void handle(TManSample event) {
-        	System.out.println("Received TMan samples: " + event.getSample().size());
+//        	System.out.println("Received TMan samples: " + event.getSample().size());
             
             // receive a new list of neighbors
             neighbours.clear();

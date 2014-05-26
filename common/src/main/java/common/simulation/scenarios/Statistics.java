@@ -94,7 +94,7 @@ public class Statistics {
 	public void write() {
 		try {
 			FileOutputStream fileOut = new FileOutputStream(resultTitle
-					+ System.currentTimeMillis() + ".xls");
+					+ String.valueOf(System.currentTimeMillis()) + ".xls");
 			HSSFWorkbook workbook = new HSSFWorkbook();
 			HSSFSheet worksheet = workbook.createSheet("Statistics Worksheet");
 
