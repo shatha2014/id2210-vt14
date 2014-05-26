@@ -43,7 +43,7 @@ public class Statistics {
 	}
 
 	public static Statistics getSingleResourceInstance() {
-		if (sinlgeResourceInstance == null){
+		if (sinlgeResourceInstance == null) {
 			sinlgeResourceInstance = new Statistics("singleResourceSimulation");
 		}
 		return sinlgeResourceInstance;
@@ -60,6 +60,10 @@ public class Statistics {
 		// sort();
 	}
 
+	public int getAmountOfMeasurements() {
+		return this.allocationTimes.size();
+	}
+	
 	public Long getAvg() {
 		Long sum = new Long(0);
 		if (!allocationTimes.isEmpty()) {
@@ -72,22 +76,19 @@ public class Statistics {
 	}
 
 	public Long getNinetyNinth() {
-		Collections.sort(this.allocationTimes, Collections.reverseOrder());
-		Long sum = new Long(0);
-		if (!allocationTimes.isEmpty()) {
-			int amount = allocationTimes.size() / 100;
-			for (int i = 0; i <= amount; i++) {
-				Long time = allocationTimes.get(i);
-				sum += time;
-			}
-			return sum / allocationTimes.size();
-		}
-		return sum;
+		List<Long> listToSort = new ArrayList<Long>(allocationTimes);
+		Collections.sort(listToSort);
+		Long percentile = new Long(0);
+		int pos = (int) ((listToSort.size()/ 100.0) * 99);
+		
+
+		return listToSort.get(pos);
 	}
 
 	public void write() {
 		try {
-			FileOutputStream fileOut = new FileOutputStream(resultTitle + System.currentTimeMillis() + ".xls");
+			FileOutputStream fileOut = new FileOutputStream(resultTitle
+					+ System.currentTimeMillis() + ".xls");
 			HSSFWorkbook workbook = new HSSFWorkbook();
 			HSSFSheet worksheet = workbook.createSheet("Statistics Worksheet");
 
@@ -95,17 +96,32 @@ public class Statistics {
 			HSSFRow row1 = worksheet.createRow(rowCount);
 			rowCount++;
 
-			HSSFCell cellA1 = row1.createCell((short) 0);
+			HSSFCell cellA1 = row1.createCell((short) 1);
 			cellA1.setCellValue("Scheduling Delay");
 			
-			for(Long value: this.allocationTimes){
-				HSSFRow row = worksheet.createRow(rowCount);
-				HSSFCell cell = row.createCell((short) 0);
-				cell.setCellValue(value);
-				rowCount++;
-				
-			}
+			HSSFCell cellA2 = row1.createCell((short) 2);
+			cellA2.setCellValue("Average");
 			
+			HSSFCell cellA3 = row1.createCell((short) 3);
+			cellA3.setCellValue("99th Percentile");
+
+			for (Long value : this.allocationTimes) {
+				HSSFRow row = worksheet.createRow(rowCount);
+				if(rowCount == 1) {
+					//add avg and 99th
+					HSSFCell cellB2 = row.createCell((short) 2);
+					cellB2.setCellValue(getAvg());
+					
+					HSSFCell cellB3 = row.createCell((short) 3);
+					cellB3.setCellValue(getNinetyNinth());
+				}
+				HSSFCell noCell = row.createCell((short) 0);
+				noCell.setCellValue(rowCount);
+				HSSFCell valCell = row.createCell((short) 1);
+				valCell.setCellValue(value);
+				rowCount++;
+
+			}
 
 			workbook.write(fileOut);
 			fileOut.flush();
