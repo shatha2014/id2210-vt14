@@ -1,10 +1,10 @@
 package main;
 
 import simulator.core.DataCenterSimulationMain;
-import simulator.core.Statistics;
 import common.configuration.Configuration;
 import common.simulation.scenarios.Scenario;
 import common.simulation.scenarios.Scenario1;
+import common.simulation.scenarios.Statistics;
 
 public class Main {
 
@@ -17,9 +17,9 @@ public class Main {
         scenario.setSeed(seed);
         scenario.getScenario().simulate(DataCenterSimulationMain.class);
         
-//        Statistics singleResourceInstance = Statistics.getSingleResourceInstance();
-//		System.out.println("Average delay: " + singleResourceInstance.getAvg());
-//		System.out.println("99th percentile delay: " + singleResourceInstance.getNinetyNinth());
+        Statistics singleResourceInstance = Statistics.getSingleResourceInstance();
+		System.out.println("Average delay: " + singleResourceInstance.getAvg());
+		System.out.println("99th percentile delay: " + singleResourceInstance.getNinetyNinth());
 		
     }
 }

@@ -26,7 +26,6 @@ public class Scenario1 extends Scenario {
 		}};
 	
                 
-                // TODO - not used yet
 		StochasticProcess failPeersProcess = new StochasticProcess() {{
 			eventInterArrivalTime(constant(100));
 			raise(1, Operations.peerFail, 
@@ -40,9 +39,15 @@ public class Scenario1 extends Scenario {
 		process0.start();
 		process1.startAfterTerminationOf(2000, process0);
 		failPeersProcess.startAfterTerminationOf(4000, process1);
-		// 
+		 
 		terminateProcess.startAfterTerminationOf(1000, failPeersProcess);
-               // terminateProcess.startAfterTerminationOf(100*1000, process1);
+//                terminateProcess.startAfterTerminationOf(100*1000, process1);
+		
+			Statistics singleResourceInstance = Statistics
+					.getSingleResourceInstance();
+			System.out.println("Average delay: "
+					+ singleResourceInstance.getAvg());
+			System.out.println("99th percentile delay: " + singleResourceInstance.getNinetyNinth());
 	}};
 
 	// -------------------------------------------------------------------

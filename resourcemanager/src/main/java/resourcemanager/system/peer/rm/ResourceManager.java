@@ -3,6 +3,7 @@ package resourcemanager.system.peer.rm;
 import common.configuration.RmConfiguration;
 import common.peer.AvailableResources;
 import common.simulation.RequestResource;
+import common.simulation.scenarios.Statistics;
 import cyclon.system.peer.cyclon.CyclonSample;
 import cyclon.system.peer.cyclon.CyclonSamplePort;
 import cyclon.system.peer.cyclon.PeerDescriptor;
@@ -25,7 +26,6 @@ import se.sics.kompics.timer.SchedulePeriodicTimeout;
 import se.sics.kompics.timer.ScheduleTimeout;
 import se.sics.kompics.timer.Timer;
 import se.sics.kompics.web.Web;
-import simulator.core.Statistics;
 import system.peer.RmPort;
 import tman.system.peer.tman.TManSample;
 import tman.system.peer.tman.TManSamplePort;
@@ -277,8 +277,8 @@ public final class ResourceManager extends ComponentDefinition {
  			   System.out.println("RESOURCES HAVE BEEN ALLOCATED FOR [" + self.getId() + "]");
  			   
  			   //log scheduling delay
-// 			   long delay = System.currentTimeMillis() - requestTimestamp;
-// 			   Statistics.getSingleResourceInstance().addTime(delay);
+ 			   long delay = System.currentTimeMillis() - requestTimestamp;
+ 			   Statistics.getSingleResourceInstance().addTime(delay);
         		
         		// Check to whom you should send the cancel request
         		for(Address objAddress : sentRequestsAddresses)
