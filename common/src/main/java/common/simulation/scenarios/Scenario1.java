@@ -41,8 +41,8 @@ public class Scenario1 extends Scenario {
 		process1.startAfterTerminationOf(2000, process0);
 		failPeersProcess.startAfterTerminationOf(4000, process1);
 		// 
-		terminateProcess.startAfterTerminationOf(1000, failPeersProcess);
-               // terminateProcess.startAfterTerminationOf(100*1000, process1);
+	terminateProcess.startAfterTerminationOf(1000*100, failPeersProcess);
+            //   terminateProcess.startAfterTerminationOf(100*1000, process1);
 	}};
 
 	// -------------------------------------------------------------------
