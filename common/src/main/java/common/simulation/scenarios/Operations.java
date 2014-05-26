@@ -31,6 +31,12 @@ public class Operations {
     public static Operation<TerminateExperiment> terminate = new Operation<TerminateExperiment>() {
         @Override
         public TerminateExperiment generate() {
+        	Statistics singleResourceInstance = Statistics
+					.getSingleResourceInstance();
+			System.out.println("Average delay: "
+					+ singleResourceInstance.getAvg());
+			System.out.println("99th percentile delay: " + singleResourceInstance.getNinetyNinth());
+			singleResourceInstance.write();
             return new TerminateExperiment();
         }
     };

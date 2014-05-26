@@ -72,20 +72,20 @@ public class Statistics {
 	}
 
 	public Long getNinetyNinth() {
-		Collections.sort(this.allocationTimes);
+		Collections.sort(this.allocationTimes, Collections.reverseOrder());
 		Long sum = new Long(0);
 		if (!allocationTimes.isEmpty()) {
 			int amount = allocationTimes.size() / 100;
-			for (int i = 0; i < amount; i++) {
+			for (int i = 0; i <= amount; i++) {
 				Long time = allocationTimes.get(i);
 				sum += time;
 			}
-			return sum / amount;
+			return sum / allocationTimes.size();
 		}
 		return sum;
 	}
 
-	private void write() {
+	public void write() {
 		try {
 			FileOutputStream fileOut = new FileOutputStream(resultTitle + System.currentTimeMillis() + ".xls");
 			HSSFWorkbook workbook = new HSSFWorkbook();
@@ -100,7 +100,7 @@ public class Statistics {
 			
 			for(Long value: this.allocationTimes){
 				HSSFRow row = worksheet.createRow(rowCount);
-				HSSFCell cell = row1.createCell((short) 0);
+				HSSFCell cell = row.createCell((short) 0);
 				cell.setCellValue(value);
 				rowCount++;
 				

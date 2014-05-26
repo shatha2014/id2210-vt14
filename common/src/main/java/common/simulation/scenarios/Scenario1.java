@@ -9,7 +9,7 @@ public class Scenario1 extends Scenario {
 		StochasticProcess process0 = new StochasticProcess() {{
 			eventInterArrivalTime(constant(1000));
 			// Shatha modification - it was 3
-			raise(3, Operations.peerJoin(), 
+			raise(35, Operations.peerJoin(), 
                                 uniform(0, Integer.MAX_VALUE), 
                                 constant(8), constant(12000)
                              );
@@ -18,7 +18,7 @@ public class Scenario1 extends Scenario {
 		StochasticProcess process1 = new StochasticProcess() {{
 			eventInterArrivalTime(constant(100));
 			// Shatha modification, it was 100
-			raise(10, Operations.requestResources(), 
+			raise(100, Operations.requestResources(), 
                                 uniform(0, Integer.MAX_VALUE),
                                 constant(2), constant(2000),
                                 constant(1000*60*1) // 1 minute
@@ -28,7 +28,7 @@ public class Scenario1 extends Scenario {
                 
 		StochasticProcess failPeersProcess = new StochasticProcess() {{
 			eventInterArrivalTime(constant(100));
-			raise(1, Operations.peerFail, 
+			raise(2, Operations.peerFail, 
                                 uniform(0, Integer.MAX_VALUE));
 		}};
                 
@@ -43,11 +43,7 @@ public class Scenario1 extends Scenario {
 		terminateProcess.startAfterTerminationOf(1000, failPeersProcess);
 //                terminateProcess.startAfterTerminationOf(100*1000, process1);
 		
-			Statistics singleResourceInstance = Statistics
-					.getSingleResourceInstance();
-			System.out.println("Average delay: "
-					+ singleResourceInstance.getAvg());
-			System.out.println("99th percentile delay: " + singleResourceInstance.getNinetyNinth());
+			
 	}};
 
 	// -------------------------------------------------------------------
