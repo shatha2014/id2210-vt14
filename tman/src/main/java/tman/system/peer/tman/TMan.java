@@ -43,6 +43,10 @@ public final class TMan extends ComponentDefinition {
 	private long tmanTimeout;
 	private ArrayList<TManViewEntry> entries;
 	int size = 10;
+	int gradient_type = 1;
+	// gradient type: 1 .. comparison based on free CPUs
+	// gradient type: 2 .. comparison based on memory 
+	// gradient type: 3 .. comparison based on combination of CPUs and memory
 
 	public class TManSchedule extends Timeout {
 
@@ -167,7 +171,8 @@ public final class TMan extends ComponentDefinition {
 		    //{
 		    //	bufferEntriesResources.add(p.getResources());
 		   // }
-		    Collections.sort( receivedRandomBuffer.getDescriptors(), new ComparatorByResources(new TManPeerDescriptor(self,availableResources.getNumFreeCpus(), availableResources.getFreeMemInMbs())));
+		    
+		    Collections.sort( receivedRandomBuffer.getDescriptors(), new ComparatorByResources(new TManPeerDescriptor(self,availableResources.getNumFreeCpus(), availableResources.getFreeMemInMbs()), gradient_type));
 		    //System.out.println("HANDLE REQUEST - SORTING NODES IN BUFFER AND CHOOSING HIGHEST NODES TO REMAIN ..");
 		    
 		    ArrayList<TManPeerDescriptor> descriptors = new ArrayList<TManPeerDescriptor>();
@@ -209,7 +214,8 @@ public final class TMan extends ComponentDefinition {
 		   // {
 		    //	bufferEntriesResources.add(p.getResources());
 		   // }
-		    Collections.sort(receivedRandomBuffer.getDescriptors(), new ComparatorByResources(new TManPeerDescriptor(self,availableResources.getNumFreeCpus(), availableResources.getFreeMemInMbs())));
+		    
+		    Collections.sort(receivedRandomBuffer.getDescriptors(), new ComparatorByResources(new TManPeerDescriptor(self,availableResources.getNumFreeCpus(), availableResources.getFreeMemInMbs()), gradient_type));
 		    //System.out.println("HANDLE RESPONSE - SORTING ..");
 		    
 		    // buffer should be updated again
@@ -272,7 +278,7 @@ public final class TMan extends ComponentDefinition {
 	
 	
 	public TManPeerDescriptor getSoftMaxEntry(List<TManPeerDescriptor> entries) {
-		Collections.sort(entries, new ComparatorByResources(new TManPeerDescriptor(self, availableResources.getNumFreeCpus(), availableResources.getFreeMemInMbs())));
+		Collections.sort(entries, new ComparatorByResources(new TManPeerDescriptor(self, availableResources.getNumFreeCpus(), availableResources.getFreeMemInMbs()), gradient_type));
 
 		double rnd = r.nextDouble();
 		double total = 0.0d;
