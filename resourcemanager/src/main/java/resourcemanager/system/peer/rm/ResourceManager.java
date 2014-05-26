@@ -7,12 +7,16 @@ import common.simulation.scenarios.Statistics;
 import cyclon.system.peer.cyclon.CyclonSample;
 import cyclon.system.peer.cyclon.CyclonSamplePort;
 import cyclon.system.peer.cyclon.PeerDescriptor;
+
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Comparator;
+import java.util.List;
 import java.util.Random;
+
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+
 import se.sics.kompics.ComponentDefinition;
 import se.sics.kompics.Handler;
 import se.sics.kompics.Negative;
@@ -403,8 +407,8 @@ public final class ResourceManager extends ComponentDefinition {
 	            neighbours.clear();
 	            
 	            // changed
-	            ArrayList<TManPeerDescriptor> partnersDescriptors = event.getSample();
-	            ArrayList<Address> partners = new ArrayList<Address>();
+	            List<TManPeerDescriptor> partnersDescriptors = event.getSample();
+	            List<Address> partners = new ArrayList<Address>();
 	    		for (TManPeerDescriptor desc : partnersDescriptors)
 	    			partners.add(desc.getAddress());
 	            neighbours.addAll(partners);
