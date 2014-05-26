@@ -9,8 +9,8 @@ public class ComparatorByResources implements Comparator<TManPeerDescriptor> {
 		this.objTManPeerDescriptor = objDescriptor;
 	}
 
-	@Override
-	public int compare(TManPeerDescriptor o1, TManPeerDescriptor o2) {
+	
+	public int compare_1(TManPeerDescriptor o1, TManPeerDescriptor o2) {
 		//if(o1.getResources() == null || o2.getResources() == null || objTManPeerDescriptor.getResources() == null) return -1;
 		int numFreeCPUs_o1 = o1.getNumFreeCpus();
 		int numFreeCPUs_o2 = o2.getNumFreeCpus();
@@ -31,7 +31,7 @@ public class ComparatorByResources implements Comparator<TManPeerDescriptor> {
 	}
 	
 	
-	public int compare_metric(TManPeerDescriptor o1, TManPeerDescriptor o2)
+	public int compare(TManPeerDescriptor o1, TManPeerDescriptor o2)
 	{
 		int value_o1 = 0; int value_o2 = 0; int value_self = 0;
 		//if(o1.getResources() == null || o2.getResources() == null || objTManPeerDescriptor.getResources() == null) return -1;
