@@ -2,27 +2,15 @@ package tman.system.peer.tman;
 
 import common.configuration.TManConfiguration;
 import common.peer.AvailableResources;
-import common.peer.PeerDescriptor;
-
 import java.util.ArrayList;
-
-import cyclon.system.peer.cyclon.Cache;
 import cyclon.system.peer.cyclon.CyclonSample;
 import cyclon.system.peer.cyclon.CyclonSamplePort;
-import cyclon.system.peer.cyclon.DescriptorBuffer;
-import cyclon.system.peer.cyclon.ShuffleTimeout;
-import cyclon.system.peer.cyclon.ViewEntry;
-
-import java.util.Arrays;
 import java.util.Collections;
-import java.util.Comparator;
 import java.util.List;
 import java.util.Random;
 import java.util.UUID;
-
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-
 import se.sics.kompics.ComponentDefinition;
 import se.sics.kompics.Handler;
 import se.sics.kompics.Negative;
@@ -52,9 +40,9 @@ public final class TMan extends ComponentDefinition {
 	private Random r;
 	private AvailableResources availableResources;
 	// Shatha 
-	private TManDescriptorBuffer buffer;
 	private long tmanTimeout;
 	private ArrayList<TManViewEntry> entries;
+	int size = 10;
 
 	public class TManSchedule extends Timeout {
 
@@ -104,6 +92,7 @@ public final class TMan extends ComponentDefinition {
 			Snapshot.updateTManPartners(self, partnersAddresses);
 
 			// Publish sample to connected components
+			//System.out.println(".. TMAN ..");
 			trigger(new TManSample(tmanPartners), tmanPort);
 		}
 	};
@@ -116,26 +105,31 @@ public final class TMan extends ComponentDefinition {
 		public void handle(CyclonSample event) {
 			// 1. Retrieve the list of samples from Cyclon
 			ArrayList<cyclon.system.peer.cyclon.PeerDescriptor> cyclonPartners = event.getSample();
+			//System.out.println("RETRIEVING THE LIST OF CYCLON SAMPLES WITH SIZE .. " + event.getSample().size());	
+			
 				
 			
-			// 2. Merge cyclon partners in TManPartners
+			// Merge cyclon partners in TManPartners
 			//  merge is a set operation that keeps at most one descriptor
 			//  for each node
 			//tmanPartners.addAll(cyclonPartners);
 			
-			// Shatha review if TManDescriptor and the other added files are really needed or not
 			// 3. merge the buffer with a random sample of the nodes from the entire network (from cyclon)
 			ArrayList<TManPeerDescriptor> randomDescriptors = tmanPartners;
 			for(cyclon.system.peer.cyclon.PeerDescriptor a: cyclonPartners)
 			{
+				// check for uniquness
 				randomDescriptors.add(new TManPeerDescriptor(a.getAddress(),a.getNumFreeCpus(), a.getFreeMemInMbs()));
 			}
 			// add the self descriptor to the view
 			randomDescriptors.add(new TManPeerDescriptor(self, availableResources.getNumFreeCpus(), availableResources.getFreeMemInMbs()));
+			//System.out.println("MERGING DESCRIPTORS FROM CYCLON AND SELF DESCRIPTOR .. ");
 			
 			// 2. Pick a peer to send to it based on the ranking method
-			// which is the soft max preference function 
-		     TManPeerDescriptor selectedPeerDescriptor = getSoftMaxEntry(randomDescriptors);
+		    // which is the soft max preference function 
+			TManPeerDescriptor selectedPeerDescriptor = getSoftMaxEntry(randomDescriptors); 
+			//System.out.println("SELECTING PEER ACCORDING TO RANK METHOD , NUMBER OF CPUs.. " + selectedPeerDescriptor.getNumFreeCpus()
+				//	+ " AMOUNT OF MEMORY IS .. " + selectedPeerDescriptor.getFreeMemInMbs());
 					
 			
 			// 4. Schedule the timeout event 
@@ -143,10 +137,12 @@ public final class TMan extends ComponentDefinition {
 			rst.setTimeoutEvent(new ExchangeMsg.RequestTimeout(rst, selectedPeerDescriptor.getAddress()));
 			UUID rTimeoutId = rst.getTimeoutEvent().getTimeoutId();
 			
+			
             // 5. Send the request to the selected peer
-			buffer = new TManDescriptorBuffer(self, randomDescriptors);
+			TManDescriptorBuffer buffer = new TManDescriptorBuffer(self, randomDescriptors);
 			ExchangeMsg.Request objRequest = new ExchangeMsg.Request(rTimeoutId, buffer, self,selectedPeerDescriptor.getAddress() );
 			trigger(objRequest,networkPort);
+			//System.out.println("SENDING BUFFER TO SELECTED PEER .. " + selectedPeerDescriptor.getAddress());
 
 		}
 	};
@@ -157,8 +153,13 @@ public final class TMan extends ComponentDefinition {
              // 1. receive buffer from the sender
 			Address peer = event.getRandomBuffer().getFrom();
 			TManDescriptorBuffer receivedRandomBuffer = event.getRandomBuffer();
+			//System.out.println("HANDLE REQUEST - RECEIVING BUFFER FROM " + peer.getId());
+			
 			// 2. merge the received buffer with the current buffer
-		    receivedRandomBuffer.addDescriptors(buffer.getDescriptors());
+		    receivedRandomBuffer.addDescriptors(tmanPartners);
+		   // System.out.println("HANDLE REQUEST - MERGING BUFFER WITH RECEIVED BUFFER .. ");
+		    
+		    
 		    // 3. view = selectView(buff)
 		    // Sort all nodes in buffer, and pick out c highest ranked nodes
 		    //List<AvailableResources> bufferEntriesResources = new ArrayList<AvailableResources>();
@@ -167,13 +168,25 @@ public final class TMan extends ComponentDefinition {
 		    //	bufferEntriesResources.add(p.getResources());
 		   // }
 		    Collections.sort( receivedRandomBuffer.getDescriptors(), new ComparatorByResources(new TManPeerDescriptor(self,availableResources.getNumFreeCpus(), availableResources.getFreeMemInMbs())));
-		    // Shatha - Question
-		    // based on what we should choose highest ranked nodes ?
-		    // buffer should be updated again
+		    //System.out.println("HANDLE REQUEST - SORTING NODES IN BUFFER AND CHOOSING HIGHEST NODES TO REMAIN ..");
+		    
+		    ArrayList<TManPeerDescriptor> descriptors = new ArrayList<TManPeerDescriptor>();
+		    for(TManPeerDescriptor d : receivedRandomBuffer.getDescriptors())
+		    {
+		    	if(descriptors.size() < size)
+		    	{
+		    		descriptors.add(d);
+		    		
+		    	}
+		    }
+		    tmanPartners = descriptors;
+		    TManDescriptorBuffer bufferToSend = new TManDescriptorBuffer(self, descriptors);
+		   // System.out.println("HANDLE REQUEST - KEEPING C HIGHEST RANKED NODE ");
 		    
 		    // 4. Send response to the original node
-		    ExchangeMsg.Response objResponse = new ExchangeMsg.Response(event.getRequestId(), buffer, self, event.getSource());
+		    ExchangeMsg.Response objResponse = new ExchangeMsg.Response(event.getRequestId(), bufferToSend, self, event.getSource());
 		    trigger(objResponse, networkPort);
+		    //System.out.println("HANDLE REQUEST - SENDING RESPONSE WITH BUFFER ...");
 		}
 	};
 
@@ -183,8 +196,12 @@ public final class TMan extends ComponentDefinition {
 			  // 1. receive buffer from the sender
 			Address peer = event.getSelectedBuffer().getFrom();
 			TManDescriptorBuffer receivedRandomBuffer = event.getSelectedBuffer();
+			//System.out.println("HANDLE RESPONSE - RECEIVED BUFFER FROM .. " + peer.getId());
+			
 			// 2. merge the received buffer with the current buffer
-		    receivedRandomBuffer.addDescriptors(buffer.getDescriptors());
+		    receivedRandomBuffer.addDescriptors(tmanPartners);
+		    //System.out.println("HANDLE RESPONSE - MERGING BUFFER ..");
+		    
 		    // 3. view = selectView(buff)
 		    // Sort all nodes in buffer, and pick out c highest ranked nodes
 		   // List<AvailableResources> bufferEntriesResources = new ArrayList<AvailableResources>();
@@ -193,13 +210,24 @@ public final class TMan extends ComponentDefinition {
 		    //	bufferEntriesResources.add(p.getResources());
 		   // }
 		    Collections.sort(receivedRandomBuffer.getDescriptors(), new ComparatorByResources(new TManPeerDescriptor(self,availableResources.getNumFreeCpus(), availableResources.getFreeMemInMbs())));
-		    // Shatha - Question
-		    // based on what we should choose highest ranked nodes ?
+		    //System.out.println("HANDLE RESPONSE - SORTING ..");
+		    
 		    // buffer should be updated again
+		    ArrayList<TManPeerDescriptor> descriptors = new ArrayList<TManPeerDescriptor>();
+		    for(TManPeerDescriptor d : receivedRandomBuffer.getDescriptors())
+		    {
+		    	if(descriptors.size() < size)
+		    	{
+		    		descriptors.add(d);
+		    	}
+		    } 
+		    tmanPartners = descriptors;
+		    //System.out.println("HANDLE RESPONSE - KEEPING C HIGHEST RANKED NODES ..");
 		    
 		    // 4. Send response to the original node
-		    ExchangeMsg.Response objResponse = new ExchangeMsg.Response(event.getRequestId(), buffer, self, event.getSource());
-		    trigger(objResponse, networkPort);
+		   // ExchangeMsg.Response objResponse = new ExchangeMsg.Response(event.getRequestId(), buffer, self, event.getSource());
+		    //trigger(objResponse, networkPort);
+		    //System.out.println("HANDLE RESPONSE - SENDING RESPONSE TO ORGINAL NODE ");
 
 		}
 	};

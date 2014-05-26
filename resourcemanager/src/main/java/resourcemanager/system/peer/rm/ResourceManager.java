@@ -27,6 +27,7 @@ import se.sics.kompics.timer.Timer;
 import se.sics.kompics.web.Web;
 import simulator.core.Statistics;
 import system.peer.RmPort;
+import tman.system.peer.tman.TManPeerDescriptor;
 import tman.system.peer.tman.TManSample;
 import tman.system.peer.tman.TManSamplePort;
 
@@ -322,17 +323,17 @@ public final class ResourceManager extends ComponentDefinition {
     Handler<CyclonSample> handleCyclonSample = new Handler<CyclonSample>() {
         @Override
         public void handle(CyclonSample event) {
-            System.out.println("Received samples: " + event.getSample().size());
+          //  System.out.println("Received samples: " + event.getSample().size());
            
             // receive a new list of neighbors
-            neighbours.clear();
+            //neighbours.clear();
             
             // changed
-            ArrayList<PeerDescriptor> partnersDescriptors = event.getSample();
-            ArrayList<Address> partners = new ArrayList<Address>();
-    		for (PeerDescriptor desc : partnersDescriptors)
-    			partners.add(desc.getAddress());
-            neighbours.addAll(partners);
+            //ArrayList<PeerDescriptor> partnersDescriptors = event.getSample();
+            //ArrayList<Address> partners = new ArrayList<Address>();
+    		//for (PeerDescriptor desc : partnersDescriptors)
+    		//	partners.add(desc.getAddress());
+            //neighbours.addAll(partners);
 
         }
     };
@@ -381,7 +382,17 @@ public final class ResourceManager extends ComponentDefinition {
     Handler<TManSample> handleTManSample = new Handler<TManSample>() {
         @Override
         public void handle(TManSample event) {
-            // TODO: 
+        	System.out.println("Received TMan samples: " + event.getSample().size());
+            
+            // receive a new list of neighbors
+            neighbours.clear();
+            
+            // changed
+            ArrayList<TManPeerDescriptor> partnersDescriptors = event.getSample();
+            ArrayList<Address> partners = new ArrayList<Address>();
+    		for (TManPeerDescriptor desc : partnersDescriptors)
+    			partners.add(desc.getAddress());
+            neighbours.addAll(partners);
         }
     };
 
