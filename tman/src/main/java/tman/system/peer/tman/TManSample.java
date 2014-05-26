@@ -8,10 +8,12 @@ import se.sics.kompics.address.Address;
 
 
 public class TManSample extends Event {
-	ArrayList<Address> partners = new ArrayList<Address>();
+	// changed
+	//ArrayList<Address> partners = new ArrayList<Address>();
+	ArrayList<TManPeerDescriptor> partners = new ArrayList<TManPeerDescriptor>();
 
 
-	public TManSample(ArrayList<Address> partners) {
+	public TManSample(ArrayList<TManPeerDescriptor> partners) {
 		this.partners = partners;
 	}
         
@@ -19,7 +21,7 @@ public class TManSample extends Event {
 	}
 
 
-	public ArrayList<Address> getSample() {
+	public ArrayList<TManPeerDescriptor> getSample() {
 		return this.partners;
 	}
 }

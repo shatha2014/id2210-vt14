@@ -8,10 +8,12 @@ import se.sics.kompics.address.Address;
 
 
 public class CyclonPartnersResponse extends Event {
-	ArrayList<Address> partners = new ArrayList<Address>();
+	// modified replacing Address with PeerDescriptor
+	//ArrayList<Address> partners = new ArrayList<Address>();
+	ArrayList<PeerDescriptor> partners = new ArrayList<PeerDescriptor>();
 
 
-	public CyclonPartnersResponse(ArrayList<Address> partners) {
+	public CyclonPartnersResponse(ArrayList<PeerDescriptor> partners) {
 		this.partners = partners;
 	}
         
@@ -19,7 +21,7 @@ public class CyclonPartnersResponse extends Event {
 	}
 
 
-	public ArrayList<Address> getPartners() {
+	public ArrayList<PeerDescriptor> getPartners() {
 		return this.partners;
 	}
 }

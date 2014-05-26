@@ -13,16 +13,20 @@ public class TManPeerDescriptor implements Comparable<TManPeerDescriptor>, Seria
 	 */
 	private static final long serialVersionUID = -604331690558185613L;
 	private final Address peerAddress;
-	private final AvailableResources resources;
-	
+	private volatile int numFreeCpus;
+	private volatile int freeMemInMbs;
+
+	/*
 	public TManPeerDescriptor(Address objAddress) {
 		this.peerAddress = objAddress;
 		this.resources = new AvailableResources(0, 0);
 	}
+	*/
 	
-	public TManPeerDescriptor(Address objAddress, AvailableResources objResources) {
+	public TManPeerDescriptor(Address objAddress, int numCpus, int freeMemory) {
 		this.peerAddress = objAddress;
-		this.resources = objResources;
+		this.numFreeCpus = numCpus;
+		this.freeMemInMbs = freeMemory;
 	}
 	
 	public Address getAddress()
@@ -30,18 +34,22 @@ public class TManPeerDescriptor implements Comparable<TManPeerDescriptor>, Seria
 		return this.peerAddress;
 	}
 	
-	public AvailableResources getResources()
-	{
-		return this.resources;
-	}
+	// added
+		public int getNumFreeCpus() {
+			return numFreeCpus;
+		}
+
+		public int getFreeMemInMbs() {
+			return freeMemInMbs;
+		}
 	
 	@Override
 	public int compareTo(TManPeerDescriptor that) {
-		if (this.resources.getNumFreeCpus() > that.resources.getNumFreeCpus() &&
-		    this.resources.getFreeMemInMbs() > that.resources.getFreeMemInMbs())
+		if (this.getNumFreeCpus() > that.getNumFreeCpus() &&
+		    this.getFreeMemInMbs() > that.getFreeMemInMbs())
 			return 1;
-		if (this.resources.getNumFreeCpus() < that.resources.getNumFreeCpus() &&
-			this.resources.getFreeMemInMbs() < that.resources.getFreeMemInMbs())
+		if (this.getNumFreeCpus() < that.getNumFreeCpus() &&
+			this.getFreeMemInMbs() < that.getFreeMemInMbs())
 			return -1;
 		return 0;
 	}
