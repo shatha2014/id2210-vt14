@@ -19,14 +19,15 @@ public class ResourcesComparator implements Comparable {
 	public int compareTo(Object o) {
 		ResourcesComparator obj = (ResourcesComparator) o;
 
+		//TODO make this smarter
 		// Check num of CPUs first then amount of memory
 		if (numCpus > obj.numCpus) {
 			return 1;
 		} 
-		
-		if (amountMemInMb > obj.amountMemInMb) {
-			return 1;
-		} else {
+		//else if (amountMemInMb > obj.amountMemInMb) {
+			//return 1;
+	//	}
+	    else {
 			return -1;
 		}
 	}

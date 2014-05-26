@@ -7,15 +7,12 @@ import common.simulation.scenarios.Statistics;
 import cyclon.system.peer.cyclon.CyclonSample;
 import cyclon.system.peer.cyclon.CyclonSamplePort;
 import cyclon.system.peer.cyclon.PeerDescriptor;
-
 import java.util.ArrayList;
-import java.util.Arrays;
+import java.util.Collections;
 import java.util.Comparator;
 import java.util.Random;
-
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-
 import se.sics.kompics.ComponentDefinition;
 import se.sics.kompics.Handler;
 import se.sics.kompics.Negative;
@@ -122,6 +119,7 @@ public final class ResourceManager extends ComponentDefinition {
             // 1. Select PROBESIZE random peers from the current neighbors
 			ArrayList<Address> selectedNeighbors = new ArrayList<Address>();
 			 long seed = System.currentTimeMillis();
+			 seed = (long) (seed * Math.random());
 			Random objRandom = new Random(seed);
 			if (neighbours != null && neighbours.size() > 0) {
 				for (int i = 0; i < PROBESIZE; i++) {
@@ -189,15 +187,19 @@ public final class ResourceManager extends ComponentDefinition {
 					.getAmountMemInMb(), event.getSource()));
 			// you received responses from all nodes
 			// but what if one of them didn't reply, should handle this ..
-			if (grouping.size() == PROBESIZE) {
-				Object[] objArr = grouping.toArray();
-				Arrays.sort(objArr);
-
+			int refSize = grouping.size();
+			if(refSize < PROBESIZE && refSize > 0)
+				refSize++;
+			// Shatha to do --> handle timeout
+			if (refSize == PROBESIZE) {
+				// passing the resource comparator
+				Collections.sort(grouping);
+				//Object[] objArr = grouping.toArray();
 				// send a resources allocation request for two nodes with the
 				// highest number of free resources
 				RequestResources.ActualAllocationRequest objActualAllocationRequest = new RequestResources.ActualAllocationRequest(
 						self,
-						((ResourcesComparator) objArr[0]).getNodeAddress(),
+						grouping.get(0).getNodeAddress(),
 						event.getNumCpus(), event.getAmountMemInMb());
 				trigger(objActualAllocationRequest, networkPort);
 				
@@ -206,14 +208,14 @@ public final class ResourceManager extends ComponentDefinition {
 				{
 				RequestResources.ActualAllocationRequest objActualAllocationSecondRequest = new RequestResources.ActualAllocationRequest(
 						self,
-						((ResourcesComparator) objArr[1]).getNodeAddress(),
+						grouping.get(1).getNodeAddress(),
 						event.getNumCpus(), event.getAmountMemInMb());
 				trigger(objActualAllocationSecondRequest, networkPort);
 				}
 				// Add the addresses of the nodes to which you send so that 
 				// you can cancel after receiving a success from any of them
-				sentRequestsAddresses.add(((ResourcesComparator) objArr[0]).getNodeAddress());
-				if(PROBESIZE > 1) sentRequestsAddresses.add(((ResourcesComparator) objArr[1]).getNodeAddress());
+				sentRequestsAddresses.add(grouping.get(0).getNodeAddress());
+				if(PROBESIZE > 1) sentRequestsAddresses.add(grouping.get(1).getNodeAddress());
 
 			}
         }
@@ -300,12 +302,15 @@ public final class ResourceManager extends ComponentDefinition {
         		}
         		
         		// Schedule a periodic time event to ensure that the sender doesn't reclaim the resources from you
-        	    SchedulePeriodicTimeout objPeriodicTimeout = new SchedulePeriodicTimeout(configuration.getPeriod(), timeToHoldResource);
-        	    objPeriodicTimeout.setTimeoutEvent(new RenewTimeout(objPeriodicTimeout));
-        	    trigger(objPeriodicTimeout, timerPort);
+        	  //  SchedulePeriodicTimeout objPeriodicTimeout = new SchedulePeriodicTimeout(configuration.getPeriod(), timeToHoldResource);
+        	   // objPeriodicTimeout.setTimeoutEvent(new RenewTimeout(objPeriodicTimeout));
+        	    //trigger(objPeriodicTimeout, timerPort);
         	    
-        	    ScheduleTimeout rst = new ScheduleTimeout(timeToHoldResource + 1000);
+        	    ScheduleTimeout rst = new ScheduleTimeout(timeToHoldResource);
         		rst.setTimeoutEvent(new AllocateResourcesTimeout(rst));
+        		
+        		// TODO: no periodic scheduling , once done , just reclaim the resources 
+        		// time to hold resources 
         	}
         }
     };
@@ -346,6 +351,7 @@ public final class ResourceManager extends ComponentDefinition {
 
     // If the node receives a renew timeout from the holder of resources 
     // then it can renew, otherwise it should release the resources 
+    /*
     private boolean isActive = false;
     Handler<RenewTimeout> handleRenewTimeout = new Handler<RenewTimeout>() {
         @Override
@@ -354,15 +360,17 @@ public final class ResourceManager extends ComponentDefinition {
            isActive = true;
         }
     };
+    */
+    
     
     Handler<AllocateResourcesTimeout> handleAllocateResourcesTimeout= new Handler<AllocateResourcesTimeout>() {
         @Override
         public void handle(AllocateResourcesTimeout event) {
-          if(!isActive)
-          {
+         // if(!isActive)
+          //{
         	  availableResources.release(numAllocatedCpus, amountAllocatedMem);
         	  System.out.println("[" + self.getId() + "]" + " is releasing resources ");
-          }
+          //}
         }
     };
     
