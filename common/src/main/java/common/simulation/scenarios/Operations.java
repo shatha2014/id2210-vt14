@@ -32,6 +32,7 @@ public class Operations {
         @Override
         public TerminateExperiment generate() {
         	Statistics singleResourceInstance = Statistics.getSingleResourceInstance(); 
+        	System.out.println("Amount of spawned Requests: " + singleResourceInstance.getSpawnCount());
         	System.out.println("Amount of Measurements: " + singleResourceInstance.getAmountOfMeasurements());
 			System.out.println("Average delay: " + singleResourceInstance.getAvg());
 			System.out.println("99th percentile delay: " + singleResourceInstance.getNinetyNinth());

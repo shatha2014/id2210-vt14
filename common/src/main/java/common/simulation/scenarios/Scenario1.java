@@ -19,14 +19,21 @@ public class Scenario1 extends Scenario {
 //                 );
 		}};
                 
+		
+		
 		StochasticProcess process1 = new StochasticProcess() {{
 			eventInterArrivalTime(constant(100));
 			// Shatha modification, it was 100
-			raise(5000, Operations.requestResources(), 
+			raise(200, Operations.requestResources(), 
                                 uniform(0, Integer.MAX_VALUE),
-                                constant(2), constant(2000),
+                                uniform(2, 8), uniform(1000, 12000),
                                 constant(1000*60*1) // 1 minute
                                 );
+//			raise(50000, Operations.requestResources(), 
+//					uniform(0, Integer.MAX_VALUE),
+//					constant(2), constant(2000),
+//					constant(1000*60*1) // 1 minute
+//					);
 		}};
 	
                 
@@ -45,7 +52,7 @@ public class Scenario1 extends Scenario {
 //		failPeersProcess.startAfterTerminationOf(4000, process1);
 //		 
 //		terminateProcess.startAfterTerminationOf(1000, failPeersProcess);
-                terminateProcess.startAfterTerminationOf(100*1000, process1);
+                terminateProcess.startAfterTerminationOf(200*1000, process1);
 		
 			
 	}};
