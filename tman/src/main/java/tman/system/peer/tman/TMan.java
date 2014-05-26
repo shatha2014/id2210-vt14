@@ -35,7 +35,7 @@ public final class TMan extends ComponentDefinition {
 	private long period;
 	private Address self;
 	// changed private ArrayList<Address> tmanPartners;
-	private ArrayList<TManPeerDescriptor> tmanPartners;
+	private List<TManPeerDescriptor> tmanPartners;
 	private TManConfiguration tmanConfiguration;
 	private Random r;
 	private AvailableResources availableResources;
@@ -119,7 +119,7 @@ public final class TMan extends ComponentDefinition {
 			//tmanPartners.addAll(cyclonPartners);
 			
 			// 3. merge the buffer with a random sample of the nodes from the entire network (from cyclon)
-			ArrayList<TManPeerDescriptor> randomDescriptors = tmanPartners;
+			List<TManPeerDescriptor> randomDescriptors = tmanPartners;
 			for(cyclon.system.peer.cyclon.PeerDescriptor a: cyclonPartners)
 			{
 				// check for uniquness
@@ -172,20 +172,19 @@ public final class TMan extends ComponentDefinition {
 		    //	bufferEntriesResources.add(p.getResources());
 		   // }
 		    
-		    Collections.sort( receivedRandomBuffer.getDescriptors(), new ComparatorByResources(new TManPeerDescriptor(self,availableResources.getNumFreeCpus(), availableResources.getFreeMemInMbs()), gradient_type));
+		    List<TManPeerDescriptor> sortedDescriptor = receivedRandomBuffer.getDescriptors();
+			Collections.sort( sortedDescriptor, new ComparatorByResources(new TManPeerDescriptor(self,availableResources.getNumFreeCpus(), availableResources.getFreeMemInMbs()), gradient_type));
 		    //System.out.println("HANDLE REQUEST - SORTING NODES IN BUFFER AND CHOOSING HIGHEST NODES TO REMAIN ..");
 		    
-		    ArrayList<TManPeerDescriptor> descriptors = new ArrayList<TManPeerDescriptor>();
-		    for(TManPeerDescriptor d : receivedRandomBuffer.getDescriptors())
-		    {
-		    	if(descriptors.size() < size)
-		    	{
-		    		descriptors.add(d);
+		    ArrayList<TManPeerDescriptor> remainingDescriptors = new ArrayList<TManPeerDescriptor>();
+		    
+		    for(int i=0 ; i < size ; i++) {
+
+		    		remainingDescriptors.add(sortedDescriptor.get(i));
 		    		
-		    	}
 		    }
-		    tmanPartners = descriptors;
-		    TManDescriptorBuffer bufferToSend = new TManDescriptorBuffer(self, descriptors);
+		    tmanPartners = remainingDescriptors;
+		    TManDescriptorBuffer bufferToSend = new TManDescriptorBuffer(self, remainingDescriptors);
 		   // System.out.println("HANDLE REQUEST - KEEPING C HIGHEST RANKED NODE ");
 		    
 		    // 4. Send response to the original node
@@ -219,15 +218,17 @@ public final class TMan extends ComponentDefinition {
 		    //System.out.println("HANDLE RESPONSE - SORTING ..");
 		    
 		    // buffer should be updated again
-		    ArrayList<TManPeerDescriptor> descriptors = new ArrayList<TManPeerDescriptor>();
-		    for(TManPeerDescriptor d : receivedRandomBuffer.getDescriptors())
-		    {
-		    	if(descriptors.size() < size)
-		    	{
-		    		descriptors.add(d);
-		    	}
-		    } 
-		    tmanPartners = descriptors;
+		    List<TManPeerDescriptor> remainingDescriptors = new ArrayList<TManPeerDescriptor>();
+		    List<TManPeerDescriptor> sortedDescriptor = receivedRandomBuffer.getDescriptors();
+		    
+		    
+		    for(int i=0 ; i < size ; i++) {
+
+		    		remainingDescriptors.add(sortedDescriptor.get(i));
+		    		
+		    }
+		    tmanPartners = remainingDescriptors;
+		    
 		    //System.out.println("HANDLE RESPONSE - KEEPING C HIGHEST RANKED NODES ..");
 		    
 		    // 4. Send response to the original node
