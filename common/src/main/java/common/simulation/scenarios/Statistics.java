@@ -76,12 +76,18 @@ public class Statistics {
 	}
 
 	public Long getNinetyNinth() {
+		if(allocationTimes == null || allocationTimes.isEmpty())
+			return (long) 0;
+		
 		List<Long> listToSort = new ArrayList<Long>(allocationTimes);
 		Collections.sort(listToSort);
 		Long percentile = new Long(0);
 		int pos = (int) ((listToSort.size()/ 100.0) * 99);
 		
-
+		if(pos >= listToSort.size())
+			pos--;
+		
+		
 		return listToSort.get(pos);
 	}
 
