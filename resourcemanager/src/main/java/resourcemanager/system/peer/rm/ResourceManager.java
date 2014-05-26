@@ -39,6 +39,8 @@ import tman.system.peer.tman.TManSamplePort;
 public final class ResourceManager extends ComponentDefinition {
 
     private static final Logger logger = LoggerFactory.getLogger(ResourceManager.class);
+
+	protected static final boolean TMAN = false;
     
     Positive<RmPort> indexPort = positive(RmPort.class);
     Positive<Network> networkPort = positive(Network.class);
@@ -325,15 +327,18 @@ public final class ResourceManager extends ComponentDefinition {
         public void handle(CyclonSample event) {
           //  System.out.println("Received samples: " + event.getSample().size());
            
-            // receive a new list of neighbors
-            //neighbours.clear();
-            
-            // changed
-            //ArrayList<PeerDescriptor> partnersDescriptors = event.getSample();
-            //ArrayList<Address> partners = new ArrayList<Address>();
-    		//for (PeerDescriptor desc : partnersDescriptors)
-    		//	partners.add(desc.getAddress());
-            //neighbours.addAll(partners);
+        	if(!TMAN) {
+        		
+	            // receive a new list of neighbors
+	            neighbours.clear();
+	            
+	            // changed
+	            ArrayList<PeerDescriptor> partnersDescriptors = event.getSample();
+	            ArrayList<Address> partners = new ArrayList<Address>();
+	    		for (PeerDescriptor desc : partnersDescriptors)
+	    			partners.add(desc.getAddress());
+	            neighbours.addAll(partners);
+	       	}
 
         }
     };
@@ -384,15 +389,18 @@ public final class ResourceManager extends ComponentDefinition {
         public void handle(TManSample event) {
 //        	System.out.println("Received TMan samples: " + event.getSample().size());
             
-            // receive a new list of neighbors
-            neighbours.clear();
-            
-            // changed
-            ArrayList<TManPeerDescriptor> partnersDescriptors = event.getSample();
-            ArrayList<Address> partners = new ArrayList<Address>();
-    		for (TManPeerDescriptor desc : partnersDescriptors)
-    			partners.add(desc.getAddress());
-            neighbours.addAll(partners);
+        	if(TMAN) {
+        		
+	            // receive a new list of neighbors
+	            neighbours.clear();
+	            
+	            // changed
+	            ArrayList<TManPeerDescriptor> partnersDescriptors = event.getSample();
+	            ArrayList<Address> partners = new ArrayList<Address>();
+	    		for (TManPeerDescriptor desc : partnersDescriptors)
+	    			partners.add(desc.getAddress());
+	            neighbours.addAll(partners);
+        	}
         }
     };
 
