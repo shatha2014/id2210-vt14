@@ -6,12 +6,15 @@ import common.simulation.RequestResource;
 import cyclon.system.peer.cyclon.CyclonSample;
 import cyclon.system.peer.cyclon.CyclonSamplePort;
 import cyclon.system.peer.cyclon.PeerDescriptor;
+
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Comparator;
 import java.util.Random;
+
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+
 import se.sics.kompics.ComponentDefinition;
 import se.sics.kompics.Handler;
 import se.sics.kompics.Negative;
@@ -22,6 +25,7 @@ import se.sics.kompics.timer.SchedulePeriodicTimeout;
 import se.sics.kompics.timer.ScheduleTimeout;
 import se.sics.kompics.timer.Timer;
 import se.sics.kompics.web.Web;
+import simulator.core.Statistics;
 import system.peer.RmPort;
 import tman.system.peer.tman.TManSample;
 import tman.system.peer.tman.TManSamplePort;
@@ -41,6 +45,8 @@ public final class ResourceManager extends ComponentDefinition {
     Negative<Web> webPort = negative(Web.class);
     Positive<CyclonSamplePort> cyclonSamplePort = positive(CyclonSamplePort.class);
     Positive<TManSamplePort> tmanPort = positive(TManSamplePort.class);
+    
+    long requestTimestamp;
     
     
     ArrayList<Address> neighbours = new ArrayList<Address>();
@@ -100,10 +106,14 @@ public final class ResourceManager extends ComponentDefinition {
     // Step 1: on receiving a request, the node will send a probe randomly to a group
     // of its neighbours asking them about the availability of the requested resources in the scenario
     Handler<RequestResource> handleRequestResource = new Handler<RequestResource>() {
-        @Override
+        
+
+		@Override
         public void handle(RequestResource event) {
             
             System.out.println("HANDLE REQUEST RESOURCE: Sending Allocate resources: " + event.getNumCpus() + " + " + event.getMemoryInMbs());
+            
+            requestTimestamp = System.currentTimeMillis();
             
             // Shatha - Review
             // 1. Select PROBESIZE random peers from the current neighbors
@@ -265,6 +275,10 @@ public final class ResourceManager extends ComponentDefinition {
         	if(event.getSuccess())
         	{
  			   System.out.println("RESOURCES HAVE BEEN ALLOCATED FOR [" + self.getId() + "]");
+ 			   
+ 			   //log scheduling delay
+// 			   long delay = System.currentTimeMillis() - requestTimestamp;
+// 			   Statistics.getSingleResourceInstance().addTime(delay);
         		
         		// Check to whom you should send the cancel request
         		for(Address objAddress : sentRequestsAddresses)
