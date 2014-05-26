@@ -11,10 +11,10 @@ public class ComparatorByResources implements Comparator<TManPeerDescriptor> {
 
 	@Override
 	public int compare(TManPeerDescriptor o1, TManPeerDescriptor o2) {
-		if(o1.getResources() == null || o2.getResources() == null || objTManPeerDescriptor.getResources() == null) return -1;
-		int numFreeCPUs_o1 = o1.getResources().getNumFreeCpus();
-		int numFreeCPUs_o2 = o2.getResources().getNumFreeCpus();
-		int numFreeCPUs_self = objTManPeerDescriptor.getResources().getNumFreeCpus();
+		//if(o1.getResources() == null || o2.getResources() == null || objTManPeerDescriptor.getResources() == null) return -1;
+		int numFreeCPUs_o1 = o1.getNumFreeCpus();
+		int numFreeCPUs_o2 = o2.getNumFreeCpus();
+		int numFreeCPUs_self = objTManPeerDescriptor.getNumFreeCpus();
 		
 		assert (numFreeCPUs_o1== numFreeCPUs_o2);
 		if (numFreeCPUs_o1 < numFreeCPUs_self
@@ -34,13 +34,13 @@ public class ComparatorByResources implements Comparator<TManPeerDescriptor> {
 	public int compare_metric(TManPeerDescriptor o1, TManPeerDescriptor o2)
 	{
 		int value_o1 = 0; int value_o2 = 0; int value_self = 0;
-		if(o1.getResources() == null || o2.getResources() == null || objTManPeerDescriptor.getResources() == null) return -1;
-		int numFreeCPUs_o1 = o1.getResources().getNumFreeCpus();
-		int numFreeCPUs_o2 = o2.getResources().getNumFreeCpus();
-		int numAmountMemory_o1 = o1.getResources().getFreeMemInMbs();
-		int numAmountMemory_o2 = o2.getResources().getFreeMemInMbs();
-		int numFreeCPUs_self = objTManPeerDescriptor.getResources().getNumFreeCpus();
-		int numAmountMemory_self = objTManPeerDescriptor.getResources().getFreeMemInMbs();
+		//if(o1.getResources() == null || o2.getResources() == null || objTManPeerDescriptor.getResources() == null) return -1;
+		int numFreeCPUs_o1 = o1.getNumFreeCpus();
+		int numFreeCPUs_o2 = o2.getNumFreeCpus();
+		int numAmountMemory_o1 = o1.getFreeMemInMbs();
+		int numAmountMemory_o2 = o2.getFreeMemInMbs();
+		int numFreeCPUs_self = objTManPeerDescriptor.getNumFreeCpus();
+		int numAmountMemory_self = objTManPeerDescriptor.getFreeMemInMbs();
 		
 		value_o1 += numFreeCPUs_o1 - 4;
 		value_o1 += (numAmountMemory_o1 - 6000) / 1000;

@@ -312,7 +312,13 @@ public final class ResourceManager extends ComponentDefinition {
            
             // receive a new list of neighbors
             neighbours.clear();
-            neighbours.addAll(event.getSample());
+            
+            // changed
+            ArrayList<PeerDescriptor> partnersDescriptors = event.getSample();
+            ArrayList<Address> partners = new ArrayList<Address>();
+    		for (PeerDescriptor desc : partnersDescriptors)
+    			partners.add(desc.getAddress());
+            neighbours.addAll(partners);
 
         }
     };

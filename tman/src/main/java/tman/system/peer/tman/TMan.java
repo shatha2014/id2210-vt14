@@ -46,13 +46,15 @@ public final class TMan extends ComponentDefinition {
 
 	private long period;
 	private Address self;
-	private ArrayList<Address> tmanPartners;
+	// changed private ArrayList<Address> tmanPartners;
+	private ArrayList<TManPeerDescriptor> tmanPartners;
 	private TManConfiguration tmanConfiguration;
 	private Random r;
 	private AvailableResources availableResources;
 	// Shatha 
 	private TManDescriptorBuffer buffer;
 	private long tmanTimeout;
+	private ArrayList<TManViewEntry> entries;
 
 	public class TManSchedule extends Timeout {
 
@@ -66,7 +68,7 @@ public final class TMan extends ComponentDefinition {
 	}
 
 	public TMan() {
-		tmanPartners = new ArrayList<Address>();
+		tmanPartners = new ArrayList<TManPeerDescriptor>();
 
 		subscribe(handleInit, control);
 		subscribe(handleRound, timerPort);
@@ -96,7 +98,10 @@ public final class TMan extends ComponentDefinition {
 	Handler<TManSchedule> handleRound = new Handler<TManSchedule>() {
 		@Override
 		public void handle(TManSchedule event) {
-			Snapshot.updateTManPartners(self, tmanPartners);
+			ArrayList<Address> partnersAddresses = new ArrayList<Address>();
+			for (TManPeerDescriptor desc : tmanPartners)
+				partnersAddresses.add(desc.getAddress());
+			Snapshot.updateTManPartners(self, partnersAddresses);
 
 			// Publish sample to connected components
 			trigger(new TManSample(tmanPartners), tmanPort);
@@ -110,23 +115,23 @@ public final class TMan extends ComponentDefinition {
 		@Override
 		public void handle(CyclonSample event) {
 			// 1. Retrieve the list of samples from Cyclon
-			List<Address> cyclonPartners = event.getSample();
+			ArrayList<cyclon.system.peer.cyclon.PeerDescriptor> cyclonPartners = event.getSample();
 				
 			
 			// 2. Merge cyclon partners in TManPartners
 			//  merge is a set operation that keeps at most one descriptor
 			//  for each node
-			tmanPartners.addAll(cyclonPartners);
+			//tmanPartners.addAll(cyclonPartners);
 			
 			// Shatha review if TManDescriptor and the other added files are really needed or not
 			// 3. merge the buffer with a random sample of the nodes from the entire network (from cyclon)
-			ArrayList<TManPeerDescriptor> randomDescriptors = new ArrayList<TManPeerDescriptor>();
-			for(Address a: tmanPartners)
+			ArrayList<TManPeerDescriptor> randomDescriptors = tmanPartners;
+			for(cyclon.system.peer.cyclon.PeerDescriptor a: cyclonPartners)
 			{
-				randomDescriptors.add(new TManPeerDescriptor(a));
+				randomDescriptors.add(new TManPeerDescriptor(a.getAddress(),a.getNumFreeCpus(), a.getFreeMemInMbs()));
 			}
 			// add the self descriptor to the view
-			randomDescriptors.add(new TManPeerDescriptor(self));
+			randomDescriptors.add(new TManPeerDescriptor(self, availableResources.getNumFreeCpus(), availableResources.getFreeMemInMbs()));
 			
 			// 2. Pick a peer to send to it based on the ranking method
 			// which is the soft max preference function 
@@ -161,7 +166,7 @@ public final class TMan extends ComponentDefinition {
 		    //{
 		    //	bufferEntriesResources.add(p.getResources());
 		   // }
-		    Collections.sort( receivedRandomBuffer.getDescriptors(), new ComparatorByResources(new TManPeerDescriptor(self,availableResources)));
+		    Collections.sort( receivedRandomBuffer.getDescriptors(), new ComparatorByResources(new TManPeerDescriptor(self,availableResources.getNumFreeCpus(), availableResources.getFreeMemInMbs())));
 		    // Shatha - Question
 		    // based on what we should choose highest ranked nodes ?
 		    // buffer should be updated again
@@ -187,7 +192,7 @@ public final class TMan extends ComponentDefinition {
 		   // {
 		    //	bufferEntriesResources.add(p.getResources());
 		   // }
-		    Collections.sort(receivedRandomBuffer.getDescriptors(), new ComparatorByResources(new TManPeerDescriptor(self,availableResources)));
+		    Collections.sort(receivedRandomBuffer.getDescriptors(), new ComparatorByResources(new TManPeerDescriptor(self,availableResources.getNumFreeCpus(), availableResources.getFreeMemInMbs())));
 		    // Shatha - Question
 		    // based on what we should choose highest ranked nodes ?
 		    // buffer should be updated again
@@ -239,7 +244,7 @@ public final class TMan extends ComponentDefinition {
 	
 	
 	public TManPeerDescriptor getSoftMaxEntry(List<TManPeerDescriptor> entries) {
-		Collections.sort(entries, new ComparatorByResources(new TManPeerDescriptor(self, availableResources)));
+		Collections.sort(entries, new ComparatorByResources(new TManPeerDescriptor(self, availableResources.getNumFreeCpus(), availableResources.getFreeMemInMbs())));
 
 		double rnd = r.nextDouble();
 		double total = 0.0d;
