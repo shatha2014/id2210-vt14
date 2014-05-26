@@ -118,6 +118,7 @@ public final class ResourceManager extends ComponentDefinition {
             System.out.println("HANDLE REQUEST RESOURCE: Sending Allocate resources: " + event.getNumCpus() + " + " + event.getMemoryInMbs());
             
             requestTimestamp = System.currentTimeMillis();
+            Statistics.getSingleResourceInstance().incSpawnCount();
             
             // Shatha - Review
             // 1. Select PROBESIZE random peers from the current neighbors

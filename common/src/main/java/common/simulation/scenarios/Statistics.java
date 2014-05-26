@@ -25,6 +25,8 @@ import org.apache.poi.hssf.util.HSSFColor;
  */
 public class Statistics {
 
+	private int spawnCount;
+	
 	private static Statistics sinlgeResourceInstance;
 
 	private static Statistics batchResourceInstance;
@@ -34,6 +36,7 @@ public class Statistics {
 	private String resultTitle;
 
 	public Statistics(String title) {
+		this.spawnCount = 0;
 		this.resultTitle = title;
 		this.allocationTimes = new ArrayList<Long>();
 	}
@@ -110,6 +113,9 @@ public class Statistics {
 			
 			HSSFCell cellA3 = row1.createCell((short) 3);
 			cellA3.setCellValue("99th Percentile");
+			
+			HSSFCell cellA4 = row1.createCell((short) 4);
+			cellA4.setCellValue("No. of Request");
 
 			for (Long value : this.allocationTimes) {
 				HSSFRow row = worksheet.createRow(rowCount);
@@ -120,6 +126,9 @@ public class Statistics {
 					
 					HSSFCell cellB3 = row.createCell((short) 3);
 					cellB3.setCellValue(getNinetyNinth());
+					
+					HSSFCell cellB4 = row.createCell((short) 4);
+					cellB4.setCellValue(spawnCount);
 				}
 				HSSFCell noCell = row.createCell((short) 0);
 				noCell.setCellValue(rowCount);
@@ -139,6 +148,18 @@ public class Statistics {
 			e.printStackTrace();
 		}
 
+	}
+
+	public int getSpawnCount() {
+		return spawnCount;
+	}
+
+	public void setSpawnCount(int spawnCount) {
+		this.spawnCount = spawnCount;
+	}
+	
+	public void incSpawnCount() {
+		this.spawnCount++;
 	}
 
 }
