@@ -348,7 +348,7 @@ public final class ResourceManager extends ComponentDefinition {
         	    //trigger(objPeriodicTimeout, timerPort);
         	    
         	    ScheduleTimeout rst = new ScheduleTimeout(timeToHoldResource);
-        		rst.setTimeoutEvent(new AllocateResourcesTimeout(rst, event.getSource()));
+        		rst.setTimeoutEvent(new AllocateResourcesTimeout(rst, event.getSource(),event.getNumCpus(), event.getAmountMemInMb()));
         		System.out.println("sending Job to node " + event.getSource().getId());
         		trigger(rst, timerPort);
         		System.out.println(".... Sending timeout event to ... " + event.getSource().getId());
@@ -419,9 +419,10 @@ public final class ResourceManager extends ComponentDefinition {
         public void handle(AllocateResourcesTimeout event) {
          // if(!isActive)
           //{
+        
         		Statistics.getSingleResourceInstance().incReleaseResCount();
-        	  availableResources.release(numAllocatedCpus, amountAllocatedMem);
-        	  System.out.println("[" + self.getId() + "]" + " is releasing resources ");
+        	  availableResources.release(event.getNumCpus(), event.getAmountMemInMb());
+        	  System.out.println("[" + self.getId() + "]" + " is releasing resources " + event.getNumCpus() + " and " + event.getAmountMemInMb());
           //}
         }
     };
