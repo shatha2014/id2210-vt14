@@ -339,7 +339,7 @@ public final class ResourceManager extends ComponentDefinition {
         	    //trigger(objPeriodicTimeout, timerPort);
         	    
         	    ScheduleTimeout rst = new ScheduleTimeout(timeToHoldResource);
-        		rst.setTimeoutEvent(new AllocateResourcesTimeout(rst));
+        		rst.setTimeoutEvent(new AllocateResourcesTimeout(rst, event.getSource()));
         		trigger(rst, timerPort);
         		
         		// TODO: no periodic scheduling , once done , just reclaim the resources 
