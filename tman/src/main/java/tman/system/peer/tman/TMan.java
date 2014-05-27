@@ -179,7 +179,7 @@ public final class TMan extends ComponentDefinition {
 		    
 		    ArrayList<TManPeerDescriptor> remainingDescriptors = new ArrayList<TManPeerDescriptor>();
 		    
-		    for(int i=0 ; i < size ; i++) {
+		    for(int i=0 ; i < size && i < sortedDescriptor.size() ; i++) {
 
 		    		remainingDescriptors.add(sortedDescriptor.get(i));
 		    		
@@ -223,7 +223,7 @@ public final class TMan extends ComponentDefinition {
 		    List<TManPeerDescriptor> sortedDescriptor = receivedRandomBuffer.getDescriptors();
 		    
 		    
-		    for(int i=0 ; i < size ; i++) {
+		    for(int i=0 ; i < size  && i < sortedDescriptor.size(); i++) {
 
 		    		remainingDescriptors.add(sortedDescriptor.get(i));
 		    		

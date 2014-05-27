@@ -41,7 +41,7 @@ public final class ResourceManager extends ComponentDefinition {
 
     private static final Logger logger = LoggerFactory.getLogger(ResourceManager.class);
 
-	protected static final boolean TMAN = false;
+	protected static final boolean TMAN = true;
     
     Positive<RmPort> indexPort = positive(RmPort.class);
     Positive<Network> networkPort = positive(Network.class);
@@ -70,7 +70,7 @@ public final class ResourceManager extends ComponentDefinition {
     };
     // Shatha Review
     private  int timeToHoldResource;
-    private int PROBESIZE = 1; 
+    private int PROBESIZE = 5; 
 
 	
     public ResourceManager() {
