@@ -340,6 +340,7 @@ public final class ResourceManager extends ComponentDefinition {
         	    
         	    ScheduleTimeout rst = new ScheduleTimeout(timeToHoldResource);
         		rst.setTimeoutEvent(new AllocateResourcesTimeout(rst));
+        		trigger(rst, timerPort);
         		
         		// TODO: no periodic scheduling , once done , just reclaim the resources 
         		// time to hold resources 
