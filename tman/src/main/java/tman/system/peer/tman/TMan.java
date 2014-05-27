@@ -127,7 +127,7 @@ public final class TMan extends ComponentDefinition {
 			// add the self descriptor to the view
 			TManPeerDescriptor selfDescriptor = new TManPeerDescriptor(self, availableResources.getNumFreeCpus(), availableResources.getFreeMemInMbs());
 			if(!randomDescriptors.contains(selfDescriptor))
-			randomDescriptors.add(selfDescriptor);
+				randomDescriptors.add(selfDescriptor);
 			//System.out.println("MERGING DESCRIPTORS FROM CYCLON AND SELF DESCRIPTOR .. ");
 			
 			// 2. Pick a peer to send to it based on the ranking method

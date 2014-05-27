@@ -33,6 +33,9 @@ public class Operations {
         public TerminateExperiment generate() {
         	Statistics singleResourceInstance = Statistics.getSingleResourceInstance(); 
         	System.out.println("Amount of spawned Requests: " + singleResourceInstance.getSpawnCount());
+        	System.out.println("Amount of received Requests: " + singleResourceInstance.getRcvdRqstCount());
+        	System.out.println("Amount of available Resources Msgs: " + singleResourceInstance.getAvlblResCount());
+        	System.out.println("Amount of actual Allocations: " + singleResourceInstance.getAllocReqCount());
         	System.out.println("Amount of Measurements: " + singleResourceInstance.getAmountOfMeasurements());
 			System.out.println("Average delay: " + singleResourceInstance.getAvg());
 			System.out.println("99th percentile delay: " + singleResourceInstance.getNinetyNinth());

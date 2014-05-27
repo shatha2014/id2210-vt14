@@ -159,6 +159,9 @@ public final class ResourceManager extends ComponentDefinition {
     Handler<RequestResources.Request> handleResourceAllocationRequest = new Handler<RequestResources.Request>() {
         @Override
         public void handle(RequestResources.Request event) {
+        	
+        	Statistics.getSingleResourceInstance().incRcvdRqstCount();
+        	
         	// Printing out on the screen for tracking purpose   
         	System.out.println("HANDLE RESORUCE ALLOCATION REQUEST: " +
                  "[" + event.getDestination().getId() + "]" + " received a request from : [" + event.getSource().getId() + "]" +
@@ -184,6 +187,8 @@ public final class ResourceManager extends ComponentDefinition {
         @Override
         public void handle(RequestResources.AvailableResourcesResponse event) {
          /// printing out for tracking reasons .. 
+        	Statistics.getSingleResourceInstance().incAvlblResCount();
+        	
         	System.out.println("HANDLE AVAILABLE RESOURCES RESPONSE, event source is [" + event.getSource().getId() + "]" +
         			" and event destination is [" + event.getDestination().getId() + "]" + " and i will try to compare to find the node with " +
         			" the highest number of free resources ... " );
@@ -193,8 +198,8 @@ public final class ResourceManager extends ComponentDefinition {
 			// you received responses from all nodes
 			// but what if one of them didn't reply, should handle this ..
 			int refSize = grouping.size();
-			if(refSize < PROBESIZE && refSize > 0)
-				refSize++;
+//			if(refSize < PROBESIZE && refSize > 0)
+//				refSize++;
 			// Shatha to do --> handle timeout
 			if (refSize == PROBESIZE) {
 				// passing the resource comparator
@@ -209,18 +214,18 @@ public final class ResourceManager extends ComponentDefinition {
 				trigger(objActualAllocationRequest, networkPort);
 				
 				// send to the next highest one
-				if(PROBESIZE > 1)
-				{
-				RequestResources.ActualAllocationRequest objActualAllocationSecondRequest = new RequestResources.ActualAllocationRequest(
-						self,
-						grouping.get(1).getNodeAddress(),
-						event.getNumCpus(), event.getAmountMemInMb());
-				trigger(objActualAllocationSecondRequest, networkPort);
-				}
+//				if(PROBESIZE > 1)
+//				{
+//				RequestResources.ActualAllocationRequest objActualAllocationSecondRequest = new RequestResources.ActualAllocationRequest(
+//						self,
+//						grouping.get(1).getNodeAddress(),
+//						event.getNumCpus(), event.getAmountMemInMb());
+//				trigger(objActualAllocationSecondRequest, networkPort);
+//				}
 				// Add the addresses of the nodes to which you send so that 
 				// you can cancel after receiving a success from any of them
 				sentRequestsAddresses.add(grouping.get(0).getNodeAddress());
-				if(PROBESIZE > 1) sentRequestsAddresses.add(grouping.get(1).getNodeAddress());
+//				if(PROBESIZE > 1) sentRequestsAddresses.add(grouping.get(1).getNodeAddress());
 
 			}
         }
@@ -236,6 +241,8 @@ public final class ResourceManager extends ComponentDefinition {
         public void handle(RequestResources.ActualAllocationRequest event) {
 			
         	// Printing out results for tracking reasons 
+        	Statistics.getSingleResourceInstance().incAllocReqCount();
+        	
         	System.out.println("HANDLE ACTUAL ALLOCATION REQUEST - event source [" + 
         	event.getSource().getId() + "] and destination [" + event.getDestination().getId() + "] and we are checking if "
         	+  "we have enough resources for the allocation so that we allocate them " +
@@ -282,13 +289,13 @@ public final class ResourceManager extends ComponentDefinition {
         	
         	// if you receive a success from one of the nodes you sent to then
            // you should cancel the request for the other node
+        	//log scheduling delay
+        	long delay = System.currentTimeMillis() - requestTimestamp;
+        	Statistics.getSingleResourceInstance().addTime(delay);
         	if(event.getSuccess())
         	{
  			   System.out.println("RESOURCES HAVE BEEN ALLOCATED FOR [" + self.getId() + "]");
  			   
- 			   //log scheduling delay
- 			   long delay = System.currentTimeMillis() - requestTimestamp;
- 			   Statistics.getSingleResourceInstance().addTime(delay);
         		
         		// Check to whom you should send the cancel request
         		for(Address objAddress : sentRequestsAddresses)

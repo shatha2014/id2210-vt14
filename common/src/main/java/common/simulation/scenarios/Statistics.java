@@ -26,6 +26,9 @@ import org.apache.poi.hssf.util.HSSFColor;
 public class Statistics {
 
 	private int spawnCount;
+	private int rcvdRqstCount;
+	private int avlblResCount;
+	private int allocReqCount;
 	
 	private static Statistics sinlgeResourceInstance;
 
@@ -160,6 +163,42 @@ public class Statistics {
 	
 	public void incSpawnCount() {
 		this.spawnCount++;
+	}
+
+	public int getRcvdRqstCount() {
+		return rcvdRqstCount;
+	}
+
+	public void setRcvdRqstCount(int rcvdRqstCount) {
+		this.rcvdRqstCount = rcvdRqstCount;
+	}
+	
+	public void incRcvdRqstCount() {
+		this.rcvdRqstCount++;
+	}
+
+	public int getAvlblResCount() {
+		return avlblResCount;
+	}
+
+	public void setAvlblResCount(int avlblResCount) {
+		this.avlblResCount = avlblResCount;
+	}
+	
+	public void incAvlblResCount() {
+		this.avlblResCount++;
+	}
+
+	public int getAllocReqCount() {
+		return allocReqCount;
+	}
+
+	public void setAllocReqCount(int allocReqCount) {
+		this.allocReqCount = allocReqCount;
+	}
+	
+	public void incAllocReqCount() {
+		this.allocReqCount++;
 	}
 
 }
