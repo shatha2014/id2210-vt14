@@ -92,6 +92,7 @@ public final class ResourceManager extends ComponentDefinition {
         subscribe(handleActualAllocationRequest, networkPort);
         subscribe(handleAvailableResourcesResponse, networkPort);
         subscribe(handleCancelRequest, networkPort);
+        subscribe(handleAllocateResourcesTimeout, timerPort);
         
     }
 	
@@ -314,7 +315,7 @@ public final class ResourceManager extends ComponentDefinition {
         		//log scheduling delay
         		long delay = System.currentTimeMillis() - requestTimestamp;
         		Statistics.getSingleResourceInstance().addTime(delay);
- 			   System.out.println("RESOURCES HAVE BEEN ALLOCATED FOR [" + self.getId() + "]");
+ 			   System.out.println("RESOURCES HAVE BEEN ALLOCATED FOR [" + self.getId() + "]" + " from " + event.getSource());
  			   
         		
         		// Check to whom you should send the cancel request
@@ -341,6 +342,7 @@ public final class ResourceManager extends ComponentDefinition {
         	    ScheduleTimeout rst = new ScheduleTimeout(timeToHoldResource);
         		rst.setTimeoutEvent(new AllocateResourcesTimeout(rst, event.getSource()));
         		trigger(rst, timerPort);
+        		System.out.println(".... Sending timeout event to ... " + event.getSource().getId());
         		
         		// TODO: no periodic scheduling , once done , just reclaim the resources 
         		// time to hold resources 
