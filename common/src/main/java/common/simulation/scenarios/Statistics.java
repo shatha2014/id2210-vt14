@@ -29,6 +29,7 @@ public class Statistics {
 	private int rcvdRqstCount;
 	private int avlblResCount;
 	private int allocReqCount;
+	private int reReqCount;
 	
 	private static Statistics sinlgeResourceInstance;
 
@@ -199,6 +200,18 @@ public class Statistics {
 	
 	public void incAllocReqCount() {
 		this.allocReqCount++;
+	}
+
+	public int getReReqCount() {
+		return reReqCount;
+	}
+
+	public void setReReqCount(int reReqCount) {
+		this.reReqCount = reReqCount;
+	}
+	
+	public void incReReqCount() {
+		this.reReqCount++;
 	}
 
 }
