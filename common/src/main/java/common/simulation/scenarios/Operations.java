@@ -36,6 +36,7 @@ public class Operations {
         	System.out.println("Amount of received Requests: " + singleResourceInstance.getRcvdRqstCount());
         	System.out.println("Amount of available Resources Msgs: " + singleResourceInstance.getAvlblResCount());
         	System.out.println("Amount of actual Allocations: " + singleResourceInstance.getAllocReqCount());
+        	System.out.println("Amount of Resource releases: " + singleResourceInstance.getReleaseResCount());
         	System.out.println("Amount of reRequests: " + singleResourceInstance.getReReqCount());
         	System.out.println("Amount of Measurements: " + singleResourceInstance.getAmountOfMeasurements());
 			System.out.println("Average delay: " + singleResourceInstance.getAvg());

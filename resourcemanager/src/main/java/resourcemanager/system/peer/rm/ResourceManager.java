@@ -116,8 +116,7 @@ public final class ResourceManager extends ComponentDefinition {
     {
     	 System.out.println("HANDLE REQUEST RESOURCE: Sending Allocate resources: " + requestedCPUs + " + " + requestedMemory);
          
-         requestTimestamp = System.currentTimeMillis();
-         Statistics.getSingleResourceInstance().incSpawnCount();
+        
          
          // Shatha - Review
          // 1. Select PROBESIZE random peers from the current neighbors
@@ -158,6 +157,10 @@ public final class ResourceManager extends ComponentDefinition {
             requestedMemory = event.getMemoryInMbs();
             timeToHoldResource = event.getTimeToHoldResource();
             requestId = event.getId();
+            
+            //log new requests to statistic
+            requestTimestamp = System.currentTimeMillis();
+            Statistics.getSingleResourceInstance().incSpawnCount();
             
             initiateRequest();
         }
@@ -404,6 +407,7 @@ public final class ResourceManager extends ComponentDefinition {
         public void handle(AllocateResourcesTimeout event) {
          // if(!isActive)
           //{
+        		Statistics.getSingleResourceInstance().incReleaseResCount();
         	  availableResources.release(numAllocatedCpus, amountAllocatedMem);
         	  System.out.println("[" + self.getId() + "]" + " is releasing resources ");
           //}

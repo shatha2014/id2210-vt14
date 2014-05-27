@@ -9,7 +9,7 @@ public class Scenario1 extends Scenario {
 		StochasticProcess process0 = new StochasticProcess() {{
 			eventInterArrivalTime(constant(1000));
 			// Shatha modification - it was 3
-			raise(200, Operations.peerJoin(), 
+			raise(100, Operations.peerJoin(), 
                                 uniform(0, Integer.MAX_VALUE), 
                                 constant(8), constant(12000)
                              );
@@ -29,9 +29,9 @@ public class Scenario1 extends Scenario {
 //                                uniform(2, 8), uniform(1000, 12000),
 //                                constant(1000*60*1) // 1 minute
 //                                );
-			raise(400, Operations.requestResources(), 
+			raise(50, Operations.requestResources(), 
 					uniform(0, Integer.MAX_VALUE),
-					constant(2), constant(2000),
+					constant(5), constant(3000),
 					constant(1000*60*1) // 1 minute
 					);
 		}};

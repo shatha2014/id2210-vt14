@@ -30,6 +30,7 @@ public class Statistics {
 	private int avlblResCount;
 	private int allocReqCount;
 	private int reReqCount;
+	private int releaseResCount;
 	
 	private static Statistics sinlgeResourceInstance;
 
@@ -45,6 +46,7 @@ public class Statistics {
 		 avlblResCount = 0;
 		allocReqCount = 0;
 		reReqCount = 0;
+		releaseResCount = 0;
 		this.resultTitle = title;
 		this.allocationTimes = new ArrayList<Long>();
 	}
@@ -217,5 +219,18 @@ public class Statistics {
 	public void incReReqCount() {
 		this.reReqCount++;
 	}
+
+	public int getReleaseResCount() {
+		return releaseResCount;
+	}
+
+	public void setReleaseResCount(int releaseResCount) {
+		this.releaseResCount = releaseResCount;
+	}
+	
+	public void incReleaseResCount() {
+		this.releaseResCount++;
+	}
+
 
 }
