@@ -43,7 +43,7 @@ public final class ResourceManager extends ComponentDefinition {
 
     private static final Logger logger = LoggerFactory.getLogger(ResourceManager.class);
 
-	protected static final boolean TMAN = true;
+	protected static final boolean TMAN = false;
     
     Positive<RmPort> indexPort = positive(RmPort.class);
     Positive<Network> networkPort = positive(Network.class);
@@ -58,6 +58,8 @@ public final class ResourceManager extends ComponentDefinition {
     private int PROBESIZE = 5; 
     private int requestedCPUs;
     private int requestedMemory;
+    
+    private boolean done = false;
     
     
     ArrayList<Address> neighbours = new ArrayList<Address>();
@@ -216,7 +218,8 @@ public final class ResourceManager extends ComponentDefinition {
 //			if(refSize < PROBESIZE && refSize > 0)
 //				refSize++;
 			// Shatha to do --> handle timeout
-			if (refSize == PROBESIZE) {
+			if (!done) {
+//				if (refSize == PROBESIZE && !done) {
 				// passing the resource comparator
 				Collections.sort(grouping);
 				//Object[] objArr = grouping.toArray();
@@ -227,6 +230,7 @@ public final class ResourceManager extends ComponentDefinition {
 						grouping.get(0).getNodeAddress(),
 						event.getNumCpus(), event.getAmountMemInMb());
 				trigger(objActualAllocationRequest, networkPort);
+				
 				
 				// send to the next highest one
 //				if(PROBESIZE > 1)
@@ -240,8 +244,11 @@ public final class ResourceManager extends ComponentDefinition {
 				// Add the addresses of the nodes to which you send so that 
 				// you can cancel after receiving a success from any of them
 				sentRequestsAddresses.add(grouping.get(0).getNodeAddress());
-				if(PROBESIZE > 1) sentRequestsAddresses.add(grouping.get(1).getNodeAddress());
+				if(PROBESIZE > 1 && refSize > 1) sentRequestsAddresses.add(grouping.get(1).getNodeAddress());
 
+			}
+			else {
+//				System.out.println("waiting for other nodes to reply");
 			}
         }
     };
@@ -257,6 +264,7 @@ public final class ResourceManager extends ComponentDefinition {
 			
         	// Printing out results for tracking reasons 
         	Statistics.getSingleResourceInstance().incAllocReqCount();
+        	done = true;
         	
         	System.out.println("HANDLE ACTUAL ALLOCATION REQUEST - event source [" + 
         	event.getSource().getId() + "] and destination [" + event.getDestination().getId() + "] and we are checking if "
@@ -291,9 +299,9 @@ public final class ResourceManager extends ComponentDefinition {
 //			   System.out.println("Printing the success result " + success );
 			   
 			} else {
-				RequestResources.Response objResponse = new RequestResources.Response(
-						self, event.getSource(), success, event.getNumCpus(), event.getAmountMemInMb());
-				trigger(objResponse, networkPort);	
+//				RequestResources.Response objResponse = new RequestResources.Response(
+//						self, event.getSource(), success, event.getNumCpus(), event.getAmountMemInMb());
+//				trigger(objResponse, networkPort);	
 			}
         }
     };
@@ -341,6 +349,7 @@ public final class ResourceManager extends ComponentDefinition {
         	    
         	    ScheduleTimeout rst = new ScheduleTimeout(timeToHoldResource);
         		rst.setTimeoutEvent(new AllocateResourcesTimeout(rst, event.getSource()));
+        		System.out.println("sending Job to node " + event.getSource().getId());
         		trigger(rst, timerPort);
         		System.out.println(".... Sending timeout event to ... " + event.getSource().getId());
         		
