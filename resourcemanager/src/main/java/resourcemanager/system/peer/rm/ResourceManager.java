@@ -225,7 +225,7 @@ public final class ResourceManager extends ComponentDefinition {
 				// Add the addresses of the nodes to which you send so that 
 				// you can cancel after receiving a success from any of them
 				sentRequestsAddresses.add(grouping.get(0).getNodeAddress());
-//				if(PROBESIZE > 1) sentRequestsAddresses.add(grouping.get(1).getNodeAddress());
+				if(PROBESIZE > 1) sentRequestsAddresses.add(grouping.get(1).getNodeAddress());
 
 			}
         }
@@ -323,6 +323,17 @@ public final class ResourceManager extends ComponentDefinition {
         		
         		// TODO: no periodic scheduling , once done , just reclaim the resources 
         		// time to hold resources 
+        	}
+        	else
+        	{
+        		if(PROBESIZE > 1)
+        		{
+        		RequestResources.ActualAllocationRequest objActualAllocationSecondRequest = new RequestResources.ActualAllocationRequest(
+						self,
+						grouping.get(1).getNodeAddress(),
+						event.getNumCpus(), event.getAmountMemInMb());
+				trigger(objActualAllocationSecondRequest, networkPort);
+        		}
         	}
         }
     };
