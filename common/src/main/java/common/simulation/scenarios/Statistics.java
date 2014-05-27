@@ -41,6 +41,10 @@ public class Statistics {
 
 	public Statistics(String title) {
 		this.spawnCount = 0;
+		 rcvdRqstCount = 0;
+		 avlblResCount = 0;
+		allocReqCount = 0;
+		reReqCount = 0;
 		this.resultTitle = title;
 		this.allocationTimes = new ArrayList<Long>();
 	}

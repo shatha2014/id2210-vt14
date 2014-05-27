@@ -253,12 +253,15 @@ public final class ResourceManager extends ComponentDefinition {
         	// when receiving this request, the node should check if it has
 			// the requested resources, then allocate them and send a response
 			// back
-			if (!isCanceled && availableResources.isAvailable(event.getNumCpus(),
-					event.getAmountMemInMb())) {
+        	
+        	// before allocation
+        	boolean success = availableResources.allocate(
+        			event.getNumCpus(), event.getAmountMemInMb());
+        	
+//			if (!isCanceled && availableResources.isAvailable(event.getNumCpus(),
+        	
+        	if (success) {
 				
-				// before allocation
-				boolean success = availableResources.allocate(
-						event.getNumCpus(), event.getAmountMemInMb());
 
 				// trigger a response with success
 				RequestResources.Response objResponse = new RequestResources.Response(
@@ -270,10 +273,13 @@ public final class ResourceManager extends ComponentDefinition {
 			    amountAllocatedMem = event.getAmountMemInMb();
 			    
 			    // Printing out results for tracking
-			   System.out.println("Printing the success result " + success );
+//			   System.out.println("Printing the success result " + success );
 			   
+			} else {
+				RequestResources.Response objResponse = new RequestResources.Response(
+						self, event.getSource(), success, event.getNumCpus(), event.getAmountMemInMb());
+				trigger(objResponse, networkPort);	
 			}
-			
         }
     };
     
@@ -290,26 +296,28 @@ public final class ResourceManager extends ComponentDefinition {
         	
         	// if you receive a success from one of the nodes you sent to then
            // you should cancel the request for the other node
-        	//log scheduling delay
-        	long delay = System.currentTimeMillis() - requestTimestamp;
-        	Statistics.getSingleResourceInstance().addTime(delay);
-			if (event.getSuccess()) {
-				System.out.println("RESOURCES HAVE BEEN ALLOCATED FOR ["
-						+ self.getId() + "]");
-
-				// Check to whom you should send the cancel request
-				for (Address objAddress : sentRequestsAddresses) {
-					if (objAddress != event.getSource()) {
-						// Send a cancel request
-						RequestResources.CancelRequest objCancel = new RequestResources.CancelRequest(
-								self, objAddress);
-						trigger(objCancel, networkPort);
-
-						// print out to track the results
-						System.out.println("triggering cancel request to ["
-								+ objAddress.getId() + "]");
-					}
-				}
+        	if(event.getSuccess()) {
+        		//log scheduling delay
+        		long delay = System.currentTimeMillis() - requestTimestamp;
+        		Statistics.getSingleResourceInstance().addTime(delay);
+ 			   System.out.println("RESOURCES HAVE BEEN ALLOCATED FOR [" + self.getId() + "]");
+ 			   
+        		
+        		// Check to whom you should send the cancel request
+//        		for(Address objAddress : sentRequestsAddresses)
+//        		{
+//        			if(objAddress != event.getSource())
+//        			{
+//        				// Send a cancel request
+//        				RequestResources.CancelRequest objCancel = new RequestResources.CancelRequest(self,
+//        						objAddress);
+//        				trigger(objCancel, networkPort);
+//        				
+//        				
+//        				// print out to track the results 
+//        				System.out.println("triggering cancel request to [" + objAddress.getId() + "]");
+//        			}
+//        		}
         		
         		// Schedule a periodic time event to ensure that the sender doesn't reclaim the resources from you
         	  //  SchedulePeriodicTimeout objPeriodicTimeout = new SchedulePeriodicTimeout(configuration.getPeriod(), timeToHoldResource);
@@ -324,13 +332,15 @@ public final class ResourceManager extends ComponentDefinition {
         	}
         	else
         	{
-				if (PROBESIZE > 1) {
+        		if(PROBESIZE > 1)
+        		{
 					Statistics.getSingleResourceInstance().incReReqCount();
-					RequestResources.ActualAllocationRequest objActualAllocationSecondRequest = new RequestResources.ActualAllocationRequest(
-							self, grouping.get(1).getNodeAddress(),
-							event.getNumCpus(), event.getAmountMemInMb());
-					trigger(objActualAllocationSecondRequest, networkPort);
-				}
+        		RequestResources.ActualAllocationRequest objActualAllocationSecondRequest = new RequestResources.ActualAllocationRequest(
+						self,
+						grouping.get(1).getNodeAddress(),
+						event.getNumCpus(), event.getAmountMemInMb());
+				trigger(objActualAllocationSecondRequest, networkPort);
+        		}
         	}
         }
     };
