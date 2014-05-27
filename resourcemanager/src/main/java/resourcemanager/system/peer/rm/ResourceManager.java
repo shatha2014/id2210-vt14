@@ -273,6 +273,13 @@ public final class ResourceManager extends ComponentDefinition {
 			   System.out.println("Printing the success result " + success );
 			   
 			}
+			else
+			{
+				// trigger a response with success
+				RequestResources.Response objResponse = new RequestResources.Response(
+						self, event.getSource(), false, event.getNumCpus(), event.getAmountMemInMb());
+				trigger(objResponse, networkPort);	
+			}
         }
     };
     
