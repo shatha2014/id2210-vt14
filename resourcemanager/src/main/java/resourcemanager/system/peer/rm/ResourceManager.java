@@ -13,6 +13,7 @@ import java.util.Collections;
 import java.util.Comparator;
 import java.util.List;
 import java.util.Random;
+import java.util.UUID;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -28,6 +29,7 @@ import se.sics.kompics.timer.ScheduleTimeout;
 import se.sics.kompics.timer.Timer;
 import se.sics.kompics.web.Web;
 import system.peer.RmPort;
+import tman.system.peer.tman.ExchangeMsg;
 import tman.system.peer.tman.TManPeerDescriptor;
 import tman.system.peer.tman.TManSample;
 import tman.system.peer.tman.TManSamplePort;
@@ -51,6 +53,7 @@ public final class ResourceManager extends ComponentDefinition {
     Positive<TManSamplePort> tmanPort = positive(TManSamplePort.class);
     
     long requestTimestamp;
+    long requestId;
     
     
     ArrayList<Address> neighbours = new ArrayList<Address>();
@@ -148,6 +151,7 @@ public final class ResourceManager extends ComponentDefinition {
 			
 			// 3. Set the time to hold resource value from the event
 			timeToHoldResource = event.getTimeToHoldResource();
+			requestId = event.getId();
 			
         }
     };
@@ -332,15 +336,13 @@ public final class ResourceManager extends ComponentDefinition {
         	}
         	else
         	{
-        		if(PROBESIZE > 1)
-        		{
+        		//if(PROBESIZE > 1)
+        		//{
 					Statistics.getSingleResourceInstance().incReReqCount();
-        		RequestResources.ActualAllocationRequest objActualAllocationSecondRequest = new RequestResources.ActualAllocationRequest(
-						self,
-						grouping.get(1).getNodeAddress(),
-						event.getNumCpus(), event.getAmountMemInMb());
-				trigger(objActualAllocationSecondRequest, networkPort);
-        		}
+                    
+					RequestResource objRequest = new RequestResource(requestId, event.getNumCpus(),
+							event.getAmountMemInMb(), timeToHoldResource);
+					trigger(objRequest, networkPort);
         	}
         }
     };
