@@ -111,8 +111,6 @@ public final class TMan extends ComponentDefinition {
 			ArrayList<cyclon.system.peer.cyclon.PeerDescriptor> cyclonPartners = event.getSample();
 			//System.out.println("RETRIEVING THE LIST OF CYCLON SAMPLES WITH SIZE .. " + event.getSample().size());	
 			
-				
-			
 			// Merge cyclon partners in TManPartners
 			//  merge is a set operation that keeps at most one descriptor
 			//  for each node
@@ -123,10 +121,13 @@ public final class TMan extends ComponentDefinition {
 			for(cyclon.system.peer.cyclon.PeerDescriptor a: cyclonPartners)
 			{
 				// check for uniquness
+				if(!randomDescriptors.contains(a))
 				randomDescriptors.add(new TManPeerDescriptor(a.getAddress(),a.getNumFreeCpus(), a.getFreeMemInMbs()));
 			}
 			// add the self descriptor to the view
-			randomDescriptors.add(new TManPeerDescriptor(self, availableResources.getNumFreeCpus(), availableResources.getFreeMemInMbs()));
+			TManPeerDescriptor selfDescriptor = new TManPeerDescriptor(self, availableResources.getNumFreeCpus(), availableResources.getFreeMemInMbs());
+			if(!randomDescriptors.contains(selfDescriptor))
+			randomDescriptors.add(selfDescriptor);
 			//System.out.println("MERGING DESCRIPTORS FROM CYCLON AND SELF DESCRIPTOR .. ");
 			
 			// 2. Pick a peer to send to it based on the ranking method
@@ -231,11 +232,6 @@ public final class TMan extends ComponentDefinition {
 		    
 		    //System.out.println("HANDLE RESPONSE - KEEPING C HIGHEST RANKED NODES ..");
 		    
-		    // 4. Send response to the original node
-		   // ExchangeMsg.Response objResponse = new ExchangeMsg.Response(event.getRequestId(), buffer, self, event.getSource());
-		    //trigger(objResponse, networkPort);
-		    //System.out.println("HANDLE RESPONSE - SENDING RESPONSE TO ORGINAL NODE ");
-
 		}
 	};
 
