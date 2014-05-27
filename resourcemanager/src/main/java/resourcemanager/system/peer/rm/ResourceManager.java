@@ -54,6 +54,10 @@ public final class ResourceManager extends ComponentDefinition {
     
     long requestTimestamp;
     long requestId;
+    private  int timeToHoldResource;
+    private int PROBESIZE = 5; 
+    private int requestedCPUs;
+    private int requestedMemory;
     
     
     ArrayList<Address> neighbours = new ArrayList<Address>();
@@ -71,9 +75,8 @@ public final class ResourceManager extends ComponentDefinition {
             }
         }
     };
-    // Shatha Review
-    private  int timeToHoldResource;
-    private int PROBESIZE = 5; 
+  
+   
 
 	
     public ResourceManager() {
@@ -109,22 +112,15 @@ public final class ResourceManager extends ComponentDefinition {
         }
     };
 
-
-    // Step 1: on receiving a request, the node will send a probe randomly to a group
-    // of its neighbours asking them about the availability of the requested resources in the scenario
-    Handler<RequestResource> handleRequestResource = new Handler<RequestResource>() {
-        
-
-		@Override
-        public void handle(RequestResource event) {
-            
-            System.out.println("HANDLE REQUEST RESOURCE: Sending Allocate resources: " + event.getNumCpus() + " + " + event.getMemoryInMbs());
-            
-            requestTimestamp = System.currentTimeMillis();
-            Statistics.getSingleResourceInstance().incSpawnCount();
-            
-            // Shatha - Review
-            // 1. Select PROBESIZE random peers from the current neighbors
+    private void initiateRequest()
+    {
+    	 System.out.println("HANDLE REQUEST RESOURCE: Sending Allocate resources: " + requestedCPUs + " + " + requestedMemory);
+         
+         requestTimestamp = System.currentTimeMillis();
+         Statistics.getSingleResourceInstance().incSpawnCount();
+         
+         // Shatha - Review
+         // 1. Select PROBESIZE random peers from the current neighbors
 			ArrayList<Address> selectedNeighbors = new ArrayList<Address>();
 			 long seed = System.currentTimeMillis();
 			 seed = (long) (seed * Math.random());
@@ -140,8 +136,8 @@ public final class ResourceManager extends ComponentDefinition {
 			if (selectedNeighbors != null) {
 				for (Address objAddress : selectedNeighbors) {
 					RequestResources.Request objRequest = new RequestResources.Request(
-							self, objAddress, event.getNumCpus(),
-							event.getMemoryInMbs());
+							self, objAddress, requestedCPUs,
+							requestedMemory);
 					trigger(objRequest, networkPort);
 					
 					// print out results for tracking reasons
@@ -149,10 +145,21 @@ public final class ResourceManager extends ComponentDefinition {
 				}
 			}
 			
-			// 3. Set the time to hold resource value from the event
-			timeToHoldResource = event.getTimeToHoldResource();
-			requestId = event.getId();
-			
+    }
+
+    // Step 1: on receiving a request, the node will send a probe randomly to a group
+    // of its neighbours asking them about the availability of the requested resources in the scenario
+    Handler<RequestResource> handleRequestResource = new Handler<RequestResource>() {
+        
+
+		@Override
+        public void handle(RequestResource event) {
+            requestedCPUs = event.getNumCpus();
+            requestedMemory = event.getMemoryInMbs();
+            timeToHoldResource = event.getTimeToHoldResource();
+            requestId = event.getId();
+            
+            initiateRequest();
         }
     };
     
@@ -336,13 +343,10 @@ public final class ResourceManager extends ComponentDefinition {
         	}
         	else
         	{
-        		//if(PROBESIZE > 1)
-        		//{
+        		
 					Statistics.getSingleResourceInstance().incReReqCount();
-                    
-					RequestResource objRequest = new RequestResource(requestId, event.getNumCpus(),
-							event.getAmountMemInMb(), timeToHoldResource);
-					trigger(objRequest, networkPort);
+                    initiateRequest();    
+				
         	}
         }
     };
