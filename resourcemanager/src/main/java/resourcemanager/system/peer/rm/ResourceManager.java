@@ -55,7 +55,7 @@ public final class ResourceManager extends ComponentDefinition {
     long requestTimestamp;
     long requestId;
     private  int timeToHoldResource;
-    private int PROBESIZE = 5; 
+    private int PROBESIZE = 4; 
     private int requestedCPUs;
     private int requestedMemory;
     
@@ -117,10 +117,8 @@ public final class ResourceManager extends ComponentDefinition {
 
     private void initiateRequest()
     {
-    	 System.out.println("HANDLE REQUEST RESOURCE: Sending Allocate resources: " + requestedCPUs + " + " + requestedMemory);
-         
+    	 System.out.println("////"+  requestId +"////" + "HANDLE REQUEST RESOURCE : Sending Allocate resources: " + requestedCPUs + " + " + requestedMemory);
         
-         
          // Shatha - Review
          // 1. Select PROBESIZE random peers from the current neighbors
 			ArrayList<Address> selectedNeighbors = new ArrayList<Address>();
@@ -139,11 +137,11 @@ public final class ResourceManager extends ComponentDefinition {
 				for (Address objAddress : selectedNeighbors) {
 					RequestResources.Request objRequest = new RequestResources.Request(
 							self, objAddress, requestedCPUs,
-							requestedMemory);
+							requestedMemory, requestId);
 					trigger(objRequest, networkPort);
 					
 					// print out results for tracking reasons
-					System.out.println("[" + self.getId() + "]" + " sending a request to the following neighbor [" + objAddress.getId() + "]");
+					System.out.println("////"+  requestId +"////" + "[" + self.getId() + "]" + " sending a request to the following neighbor [" + objAddress.getId() + "]");
 				}
 			}
 			
@@ -152,7 +150,6 @@ public final class ResourceManager extends ComponentDefinition {
     // Step 1: on receiving a request, the node will send a probe randomly to a group
     // of its neighbours asking them about the availability of the requested resources in the scenario
     Handler<RequestResource> handleRequestResource = new Handler<RequestResource>() {
-        
 
 		@Override
         public void handle(RequestResource event) {
@@ -180,7 +177,7 @@ public final class ResourceManager extends ComponentDefinition {
         	Statistics.getSingleResourceInstance().incRcvdRqstCount();
         	
         	// Printing out on the screen for tracking purpose   
-        	System.out.println("HANDLE RESORUCE ALLOCATION REQUEST: " +
+        	System.out.println("////"+  event.getRequestId() +"////" +"HANDLE RESORUCE ALLOCATION REQUEST: " +
                  "[" + event.getDestination().getId() + "]" + " received a request from : [" + event.getSource().getId() + "]" +
                  " and i have the following resources " + availableResources.getNumFreeCpus() + " and " + availableResources.getFreeMemInMbs());
         	  
@@ -206,7 +203,7 @@ public final class ResourceManager extends ComponentDefinition {
          /// printing out for tracking reasons .. 
         	Statistics.getSingleResourceInstance().incAvlblResCount();
         	
-        	System.out.println("HANDLE AVAILABLE RESOURCES RESPONSE, event source is [" + event.getSource().getId() + "]" +
+        	System.out.println("////"+  requestId +"////" +"HANDLE AVAILABLE RESOURCES RESPONSE, event source is [" + event.getSource().getId() + "]" +
         			" and event destination is [" + event.getDestination().getId() + "]" + " and i will try to compare to find the node with " +
         			" the highest number of free resources ... " );
         	
@@ -266,7 +263,7 @@ public final class ResourceManager extends ComponentDefinition {
         	Statistics.getSingleResourceInstance().incAllocReqCount();
         	done = true;
         	
-        	System.out.println("HANDLE ACTUAL ALLOCATION REQUEST - event source [" + 
+        	System.out.println("////"+  requestId +"////" +"HANDLE ACTUAL ALLOCATION REQUEST - event source [" + 
         	event.getSource().getId() + "] and destination [" + event.getDestination().getId() + "] and we are checking if "
         	+  "we have enough resources for the allocation so that we allocate them " +
         	" is canceled is " + isCanceled);
@@ -297,6 +294,13 @@ public final class ResourceManager extends ComponentDefinition {
 			    
 			    // Printing out results for tracking
 //			   System.out.println("Printing the success result " + success );
+			    
+			    ScheduleTimeout rst = new ScheduleTimeout(timeToHoldResource);
+        		rst.setTimeoutEvent(new AllocateResourcesTimeout(rst, event.getSource(),event.getNumCpus(), event.getAmountMemInMb()));
+        		System.out.println("////"+  requestId +"////" +"sending Job to node " + event.getSource().getId());
+        		trigger(rst, timerPort);
+        		System.out.println("////"+  requestId +"////" +".... Sending timeout event to ... " + event.getSource().getId());
+
 			   
 			} else {
 //				RequestResources.Response objResponse = new RequestResources.Response(
@@ -313,7 +317,7 @@ public final class ResourceManager extends ComponentDefinition {
         @Override
         public void handle(RequestResources.Response event) {
          // print out results for tracking reasons 
-        	System.out.println("HANDLE RESOURCE ALLOCATION RESPONSE - trying to know if the event succeeded or not "
+        	System.out.println("////"+  requestId +"////" +"HANDLE RESOURCE ALLOCATION RESPONSE - trying to know if the event succeeded or not "
         		  + " event source [" + event.getSource().getId() + "] and the event destination is [" + event.getDestination().getId() +
         		  "] and the success result is " + event.getSuccess() );
         	
@@ -323,7 +327,7 @@ public final class ResourceManager extends ComponentDefinition {
         		//log scheduling delay
         		long delay = System.currentTimeMillis() - requestTimestamp;
         		Statistics.getSingleResourceInstance().addTime(delay);
- 			   System.out.println("RESOURCES HAVE BEEN ALLOCATED FOR [" + self.getId() + "]" + " from " + event.getSource());
+ 			   System.out.println("////"+  requestId +"////" +"RESOURCES HAVE BEEN ALLOCATED FOR [" + self.getId() + "]" + " from " + event.getSource().getId());
  			   
         		
         		// Check to whom you should send the cancel request
@@ -347,12 +351,15 @@ public final class ResourceManager extends ComponentDefinition {
         	   // objPeriodicTimeout.setTimeoutEvent(new RenewTimeout(objPeriodicTimeout));
         	    //trigger(objPeriodicTimeout, timerPort);
         	    
+ 			   // change shatha
+ 			   /*
         	    ScheduleTimeout rst = new ScheduleTimeout(timeToHoldResource);
         		rst.setTimeoutEvent(new AllocateResourcesTimeout(rst, event.getSource(),event.getNumCpus(), event.getAmountMemInMb()));
-        		System.out.println("sending Job to node " + event.getSource().getId());
+        		System.out.println("////"+  requestId +"////" +"sending Job to node " + event.getSource().getId());
         		trigger(rst, timerPort);
-        		System.out.println(".... Sending timeout event to ... " + event.getSource().getId());
-        		
+        		System.out.println("////"+  requestId +"////" +".... Sending timeout event to ... " + event.getSource().getId());
+        		*/
+ 			   
         		// TODO: no periodic scheduling , once done , just reclaim the resources 
         		// time to hold resources 
         	}
@@ -373,7 +380,7 @@ public final class ResourceManager extends ComponentDefinition {
         @Override
         public void handle(RequestResources.CancelRequest event) {
            isCanceled = true;
-           System.out.println("[" + self.getId() + "] received a cancel request from [" + event.getSource().getId() + "]");
+           System.out.println("////"+  requestId +"////" +"[" + self.getId() + "] received a cancel request from [" + event.getSource().getId() + "]");
         }
     };
     
@@ -422,7 +429,7 @@ public final class ResourceManager extends ComponentDefinition {
         
         		Statistics.getSingleResourceInstance().incReleaseResCount();
         	  availableResources.release(event.getNumCpus(), event.getAmountMemInMb());
-        	  System.out.println("[" + self.getId() + "]" + " is releasing resources " + event.getNumCpus() + " and " + event.getAmountMemInMb());
+        	  System.out.println("////"+  requestId +"////" +"[" + self.getId() + "]" + " is releasing resources " + event.getNumCpus() + " and " + event.getAmountMemInMb());
           //}
         }
     };

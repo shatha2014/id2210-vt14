@@ -17,11 +17,13 @@ public class RequestResources  {
 
         private final int numCpus;
         private final int amountMemInMb;
+        private final long requestId;
 
-        public Request(Address source, Address destination, int numCpus, int amountMemInMb) {
+        public Request(Address source, Address destination, int numCpus, int amountMemInMb, long requestId) {
             super(source, destination);
             this.numCpus = numCpus;
             this.amountMemInMb = amountMemInMb;
+            this.requestId = requestId;
         }
 
         public int getAmountMemInMb() {
@@ -30,6 +32,11 @@ public class RequestResources  {
 
         public int getNumCpus() {
             return numCpus;
+        }
+        
+        public long getRequestId()
+        {
+        	return requestId;
         }
 
     }
