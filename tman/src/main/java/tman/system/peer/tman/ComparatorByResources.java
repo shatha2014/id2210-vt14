@@ -37,7 +37,10 @@ public class ComparatorByResources implements Comparator<TManPeerDescriptor> {
 		int numFreeCPUs_o1 = o1.getNumFreeCpus();
 		int numFreeCPUs_o2 = o2.getNumFreeCpus();
 		int numFreeCPUs_self = objTManPeerDescriptor.getNumFreeCpus();
-
+         
+		// defensive action
+		if(numFreeCPUs_o1 < 0 || numFreeCPUs_o2 < 0 || numFreeCPUs_self <0)
+			return -1;
 		assert (numFreeCPUs_o1 == numFreeCPUs_o2);
 		if (numFreeCPUs_o1 < numFreeCPUs_self
 				&& numFreeCPUs_o2 > numFreeCPUs_self) {
@@ -49,14 +52,18 @@ public class ComparatorByResources implements Comparator<TManPeerDescriptor> {
 				.abs(numFreeCPUs_o2 - numFreeCPUs_self)) {
 			return -1;
 		}
-		return 1;
+		return -1;
 	}
 
 	private int compare_memory(TManPeerDescriptor o1, TManPeerDescriptor o2) {
 		int numMemoryAmount_o1 = o1.getFreeMemInMbs();
 		int numMemoryAmount_o2 = o2.getFreeMemInMbs();
 		int numMemoryAmount_self = objTManPeerDescriptor.getFreeMemInMbs();
-
+		
+		// defensive action
+		if(numMemoryAmount_o1 < 0 || numMemoryAmount_o2 < 0 || numMemoryAmount_self <0)
+			return -1;
+				
 		assert (numMemoryAmount_o1 == numMemoryAmount_o2);
 		if (numMemoryAmount_o1 < numMemoryAmount_self
 				&& numMemoryAmount_o2 > numMemoryAmount_self) {
@@ -68,7 +75,7 @@ public class ComparatorByResources implements Comparator<TManPeerDescriptor> {
 				.abs(numMemoryAmount_o2 - numMemoryAmount_self)) {
 			return -1;
 		}
-		return 1;
+		return -1;
 	}
 
 	private int compare_combinations(TManPeerDescriptor o1,
@@ -76,6 +83,7 @@ public class ComparatorByResources implements Comparator<TManPeerDescriptor> {
 		int value_o1 = 0;
 		int value_o2 = 0;
 		int value_self = 0;
+		
 		// if(o1.getResources() == null || o2.getResources() == null ||
 		// objTManPeerDescriptor.getResources() == null) return -1;
 		int numFreeCPUs_o1 = o1.getNumFreeCpus();
@@ -84,6 +92,11 @@ public class ComparatorByResources implements Comparator<TManPeerDescriptor> {
 		int numAmountMemory_o2 = o2.getFreeMemInMbs();
 		int numFreeCPUs_self = objTManPeerDescriptor.getNumFreeCpus();
 		int numAmountMemory_self = objTManPeerDescriptor.getFreeMemInMbs();
+		
+		// defensive action
+		if(numFreeCPUs_o1 < 0 || numFreeCPUs_o2 < 0 || numAmountMemory_o1 <0 ||
+		   numAmountMemory_o2 < 0 || 	numFreeCPUs_self < 0 || numAmountMemory_self < 0)
+					return -1;
 
 		value_o1 += numFreeCPUs_o1 - 4;
 		value_o1 += (numAmountMemory_o1 - 6000) / 1000;
@@ -103,7 +116,7 @@ public class ComparatorByResources implements Comparator<TManPeerDescriptor> {
 				- value_self))
 			return -1;
 
-		return 1;
+		return -1;
 	}
 
 }
