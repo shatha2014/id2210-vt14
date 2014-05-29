@@ -54,11 +54,13 @@ public class RequestResources  {
 		private static final long serialVersionUID = -6796641553813578244L;
 		private final int numCpus;
         private final int amountMemInMb;
+        private final long requestId;
 
-        public AvailableResourcesResponse(Address source, Address destination, int numCpus, int amountMemInMb) {
+        public AvailableResourcesResponse(Address source, Address destination, int numCpus, int amountMemInMb, long requestId) {
             super(source, destination);
             this.numCpus = numCpus;
             this.amountMemInMb = amountMemInMb;
+            this.requestId = requestId;
         }
 
         public int getAmountMemInMb() {
@@ -67,6 +69,11 @@ public class RequestResources  {
 
         public int getNumCpus() {
             return numCpus;
+        }
+        
+        public long getRequestId()
+        {
+        	return requestId;
         }
 
     }
@@ -76,11 +83,13 @@ public class RequestResources  {
 
         private final int numCpus;
         private final int amountMemInMb;
+        private final long requestId;
 
-        public ActualAllocationRequest(Address source, Address destination, int numCpus, int amountMemInMb) {
+        public ActualAllocationRequest(Address source, Address destination, int numCpus, int amountMemInMb, long requestId) {
             super(source, destination);
             this.numCpus = numCpus;
             this.amountMemInMb = amountMemInMb;
+            this.requestId=  requestId;
         }
 
         public int getAmountMemInMb() {
@@ -90,6 +99,12 @@ public class RequestResources  {
         public int getNumCpus() {
             return numCpus;
         }
+        
+        public long getRequestId()
+        {
+        	return requestId;
+        }
+
 
     }
     

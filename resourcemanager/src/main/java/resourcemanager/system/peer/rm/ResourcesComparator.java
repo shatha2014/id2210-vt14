@@ -1,41 +1,36 @@
 // Shatha - Review
 package resourcemanager.system.peer.rm;
 
-import se.sics.kompics.address.Address;
+import java.util.Comparator;
 
-public class ResourcesComparator implements Comparable {
+import simulator.snapshot.PeerInfo;
 
-	private final int numCpus;
-	private final int amountMemInMb;
-	private final Address nodeAddress;
+public class ResourcesComparator implements Comparator<PeerInfo> {
 
-	ResourcesComparator(int objNumCpus, int objAmountMemInMb,
-			Address objNodeAddress) {
-		this.numCpus = objNumCpus;
-		this.amountMemInMb = objAmountMemInMb;
-		this.nodeAddress = objNodeAddress;
+	private final PeerInfo peer;
+
+	ResourcesComparator(PeerInfo objPeer) {
+		this.peer = objPeer;
 	}
 
-	public int compareTo(Object o) {
-		ResourcesComparator obj = (ResourcesComparator) o;
+	public int compare(PeerInfo peer1, PeerInfo peer2) {
+		int numFreeCPUs_o1 = peer1.getNumFreeCpus();
+		int numFreeCPUs_o2 = peer2.getNumFreeCpus();
+		int numFreeCPUs_self = peer.getNumFreeCpus();
 
-		//TODO make this smarter
-		// Check num of CPUs first then amount of memory
-		if (numCpus > obj.numCpus) {
+		assert (numFreeCPUs_o1 == numFreeCPUs_o2);
+		if (numFreeCPUs_o1 < numFreeCPUs_self
+				&& numFreeCPUs_o2 > numFreeCPUs_self) {
 			return 1;
-		} 
-		//else if (amountMemInMb > obj.amountMemInMb) {
-			//return 1;
-	//	}
-	    else {
+		} else if (numFreeCPUs_o2 < numFreeCPUs_self
+				&& numFreeCPUs_o1 > numFreeCPUs_self) {
+			return -1;
+		} else if (Math.abs(numFreeCPUs_o1 - numFreeCPUs_self) < Math
+				.abs(numFreeCPUs_o2 - numFreeCPUs_self)) {
 			return -1;
 		}
+		return 1;
 	}
 	
-	public Address getNodeAddress()
-	{
-		return this.nodeAddress;
-    }
-
 
 }
