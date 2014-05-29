@@ -16,13 +16,6 @@ public class TManPeerDescriptor implements Comparable<TManPeerDescriptor>, Seria
 	private volatile int numFreeCpus;
 	private volatile int freeMemInMbs;
 
-	/*
-	public TManPeerDescriptor(Address objAddress) {
-		this.peerAddress = objAddress;
-		this.resources = new AvailableResources(0, 0);
-	}
-	*/
-	
 	public TManPeerDescriptor(Address objAddress, int numCpus, int freeMemory) {
 		this.peerAddress = objAddress;
 		this.numFreeCpus = numCpus;
