@@ -138,24 +138,14 @@ public final class ResourceManager extends ComponentDefinition {
 
 			// to ensure unique nodes
 			Address nodeAddress;
-			/*
-			 * for (int i = 0; i < PROBESIZE; i++) { nodeAddress =
-			 * neighbours.get(objRandom.nextInt(neighbours .size())); if
-			 * (!selectedNeighbors.contains(nodeAddress) &&
-			 * !selectedAddresses.contains(nodeAddress))
-			 * selectedNeighbors.add(nodeAddress); else {
-			 * System.out.println("SHAZA...."); --i; } }
-			 */
+		
 
 			int counter = 0;
 			while (counter < PROBESIZE) {
 				nodeAddress = neighbours.get(objRandom.nextInt(neighbours
 						.size()));
-				// if (!selectedNeighbors.contains(nodeAddress))
-				// {
 				selectedNeighbors.add(nodeAddress);
 				counter++;
-				// }
 
 			}
 
@@ -181,6 +171,7 @@ public final class ResourceManager extends ComponentDefinition {
 
 		// to keep the status of the request
 		requestStatuses.put(String.valueOf(requId), false);
+	
 
 	}
 
@@ -209,7 +200,7 @@ public final class ResourceManager extends ComponentDefinition {
 			// Test REVIEWWWW
 			// Schedule a timeout for the probe size to decrease it in case
 			// one of the nodes didn't reply within time
-			ScheduleTimeout rst = new ScheduleTimeout(180000); // 30000
+			ScheduleTimeout rst = new ScheduleTimeout(200000); // 30000
 			rst.setTimeoutEvent(new RespondPeerTimeout(rst, requestId));
 			trigger(rst, timerPort);
 
@@ -368,7 +359,7 @@ public final class ResourceManager extends ComponentDefinition {
 
 				if (success) {
 					
-					Statistics.getSingleResourceInstance().incAllocReqCount();
+					//Statistics.getSingleResourceInstance().incAllocReqCount();
 
 					// trigger a response with success
 					RequestResources.Response objResponse = new RequestResources.Response(
@@ -406,6 +397,7 @@ public final class ResourceManager extends ComponentDefinition {
 					trigger(objResponse, networkPort);
 				}
 			
+			
 		}
 	};
 
@@ -429,6 +421,7 @@ public final class ResourceManager extends ComponentDefinition {
 							+ event.getSuccess());
 
 			if (event.getSuccess()) {
+				Statistics.getSingleResourceInstance().incAllocReqCount();
 
 				// log scheduling delay
 				long delay = System.currentTimeMillis() - requestTimestamp;
