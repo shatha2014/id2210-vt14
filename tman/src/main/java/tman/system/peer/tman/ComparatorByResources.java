@@ -2,6 +2,9 @@ package tman.system.peer.tman;
 
 import java.util.Comparator;
 
+// Added File
+// Needed to compare resources according to the gradient type
+// either by CPUs , or Memory , or a metric (explained in the report)
 public class ComparatorByResources implements Comparator<TManPeerDescriptor> {
 	TManPeerDescriptor objTManPeerDescriptor;
 	int gradientType;
@@ -11,6 +14,7 @@ public class ComparatorByResources implements Comparator<TManPeerDescriptor> {
 		this.gradientType = type;
 	}
 
+	// Choose the comparison based on gradient type
 	public int compare(TManPeerDescriptor o1, TManPeerDescriptor o2) {
 		int compareResult;
 		switch (gradientType) {
@@ -31,9 +35,8 @@ public class ComparatorByResources implements Comparator<TManPeerDescriptor> {
 
 	}
 
+	// Compare based on CPUs
 	private int compare_cpus(TManPeerDescriptor o1, TManPeerDescriptor o2) {
-		// if(o1.getResources() == null || o2.getResources() == null ||
-		// objTManPeerDescriptor.getResources() == null) return -1;
 		int numFreeCPUs_o1 = o1.getNumFreeCpus();
 		int numFreeCPUs_o2 = o2.getNumFreeCpus();
 		int numFreeCPUs_self = objTManPeerDescriptor.getNumFreeCpus();
@@ -55,6 +58,7 @@ public class ComparatorByResources implements Comparator<TManPeerDescriptor> {
 		return -1;
 	}
 
+	// Compare based on Memory
 	private int compare_memory(TManPeerDescriptor o1, TManPeerDescriptor o2) {
 		int numMemoryAmount_o1 = o1.getFreeMemInMbs();
 		int numMemoryAmount_o2 = o2.getFreeMemInMbs();
@@ -78,14 +82,13 @@ public class ComparatorByResources implements Comparator<TManPeerDescriptor> {
 		return -1;
 	}
 
+	// Compare based on a metric explained in report
 	private int compare_combinations(TManPeerDescriptor o1,
 			TManPeerDescriptor o2) {
 		int value_o1 = 0;
 		int value_o2 = 0;
 		int value_self = 0;
 		
-		// if(o1.getResources() == null || o2.getResources() == null ||
-		// objTManPeerDescriptor.getResources() == null) return -1;
 		int numFreeCPUs_o1 = o1.getNumFreeCpus();
 		int numFreeCPUs_o2 = o2.getNumFreeCpus();
 		int numAmountMemory_o1 = o1.getFreeMemInMbs();
