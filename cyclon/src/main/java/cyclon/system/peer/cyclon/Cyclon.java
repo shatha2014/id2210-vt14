@@ -202,6 +202,9 @@ public final class Cyclon extends ComponentDefinition {
 	}
 	*/
 	
+	// modification by Shatha & Jasper
+	// we need to return the PeerDescriptor 
+	// to use the available resources added to PeerDescriptor
 	private ArrayList<PeerDescriptor> getPartners()
 	{
 		return cache.getAll();

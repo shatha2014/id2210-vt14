@@ -7,7 +7,7 @@ public class PeerDescriptor implements Comparable<PeerDescriptor>, Serializable 
 	private static final long serialVersionUID = 1906679375438244117L;
 	private final Address peerAddress;
 	private int age;
-	// added
+	// added by Shatha & Jasper
 	private volatile int numFreeCpus;
 	private volatile int freeMemInMbs;
 

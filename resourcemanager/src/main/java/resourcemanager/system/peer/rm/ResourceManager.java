@@ -126,52 +126,66 @@ public final class ResourceManager extends ComponentDefinition {
 				+ "HANDLE REQUEST RESOURCE : Sending Allocate resources: "
 				+ requestedCPUs + " + " + requestedMemory);
 
-		// 1. Select PROBESIZE random peers from the current neighbors
-		ArrayList<Address> selectedNeighbors = new ArrayList<Address>();
-		long seed = (long) (System.currentTimeMillis() * Math.random());
-		Random objRandom = new Random(seed);
-		if (neighbours != null && neighbours.size() > 0) {
-			for (int i = 0; i < neighbours.size(); i++) {
-				System.out.println("------REQUEST ID----- " + requId
-						+ " NEIGHBORS: " + neighbours.get(i).getId());
+		// if it is TMAN then no need for probing
+		if (TMAN) {
+			// send a resources allocation request for the node with the
+			// highest number of free resources
+			long seed = (long) (System.currentTimeMillis() * Math.random());
+			Random objRandom = new Random(seed);
+			RequestResources.ActualAllocationRequest objActualAllocationRequest = new RequestResources.ActualAllocationRequest(
+					self, neighbours.get(objRandom.nextInt(neighbours.size())), requestedCPUs, requestedMemory,
+					requestId);
+			trigger(objActualAllocationRequest, networkPort);
+			System.out.println("Trying to send to " + neighbours.get(0).getId() + " Requested CPUs " + requestedCPUs + " Memory " + requestedMemory);
+
+		} else {
+			// 1. Select PROBESIZE random peers from the current neighbors
+			ArrayList<Address> selectedNeighbors = new ArrayList<Address>();
+			long seed = (long) (System.currentTimeMillis() * Math.random());
+			Random objRandom = new Random(seed);
+			if (neighbours != null && neighbours.size() > 0) {
+				for (int i = 0; i < neighbours.size(); i++) {
+					System.out.println("------REQUEST ID----- " + requId
+							+ " NEIGHBORS: " + neighbours.get(i).getId());
+				}
+
+				// to ensure unique nodes
+				Address nodeAddress;
+
+				int counter = 0;
+				while (counter < PROBESIZE) {
+					nodeAddress = neighbours.get(objRandom.nextInt(neighbours
+							.size()));
+					selectedNeighbors.add(nodeAddress);
+					counter++;
+
+				}
+
+				respondingPeers.clear();
+
 			}
 
-			// to ensure unique nodes
-			Address nodeAddress;
-		
+			// 2. Send the Request to those selected neighbors
+			if (selectedNeighbors != null) {
+				for (Address objAddress : selectedNeighbors) {
+					RequestResources.Request objRequest = new RequestResources.Request(
+							self, objAddress, requestedCPUs, requestedMemory,
+							requId);
+					trigger(objRequest, networkPort);
 
-			int counter = 0;
-			while (counter < PROBESIZE) {
-				nodeAddress = neighbours.get(objRandom.nextInt(neighbours
-						.size()));
-				selectedNeighbors.add(nodeAddress);
-				counter++;
-
+					// print out results for tracking reasons
+					System.out.println("////" + requId + "////" + "--- "
+							+ selectedNeighbors.size() + "[" + self.getId()
+							+ "]"
+							+ " sending a request to the following neighbor ["
+							+ objAddress.getId() + "]");
+				}
 			}
 
-			respondingPeers.clear();
+			// to keep the status of the request
+			requestStatuses.put(String.valueOf(requId), false);
 
 		}
-
-		// 2. Send the Request to those selected neighbors
-		if (selectedNeighbors != null) {
-			for (Address objAddress : selectedNeighbors) {
-				RequestResources.Request objRequest = new RequestResources.Request(
-						self, objAddress, requestedCPUs, requestedMemory,
-						requId);
-				trigger(objRequest, networkPort);
-
-				// print out results for tracking reasons
-				System.out.println("////" + requId + "////" + "--- "
-						+ selectedNeighbors.size() + "[" + self.getId() + "]"
-						+ " sending a request to the following neighbor ["
-						+ objAddress.getId() + "]");
-			}
-		}
-
-		// to keep the status of the request
-		requestStatuses.put(String.valueOf(requId), false);
-	
 
 	}
 
@@ -200,7 +214,7 @@ public final class ResourceManager extends ComponentDefinition {
 			// Test REVIEWWWW
 			// Schedule a timeout for the probe size to decrease it in case
 			// one of the nodes didn't reply within time
-			ScheduleTimeout rst = new ScheduleTimeout(200000); // 30000
+			ScheduleTimeout rst = new ScheduleTimeout(290000); // 30000
 			rst.setTimeoutEvent(new RespondPeerTimeout(rst, requestId));
 			trigger(rst, timerPort);
 
@@ -244,15 +258,19 @@ public final class ResourceManager extends ComponentDefinition {
 	Handler<RespondPeerTimeout> handleRespondPeerTimeout = new Handler<RespondPeerTimeout>() {
 		@Override
 		public void handle(RespondPeerTimeout event) {
-			// requestProbeSize = PROBESIZE;
-			// requestProbeSize--;
-
+			
 			// if no respond was received then reinitiate the request
-			if (!requestStatuses.get(String.valueOf(event.getRequestId()))) {
+			// IMPORTANNNNNT
+			if(!TMAN)
+			{
+			if (requestStatuses != null && !requestStatuses.get(String.valueOf(event.getRequestId()))) {
+				
 				System.out.println(" TIMEOUT " + event.getRequestId()
 						+ " RESPONDING PEER SIZE IS " + respondingPeers.size());
 				respondingPeers.clear();
 				initiateRequest(event.getRequestId());
+				}
+				
 			}
 			System.out.println("// " + requestId + " // "
 					+ "Request Probe Size became " + requestProbeSize);
@@ -298,8 +316,9 @@ public final class ResourceManager extends ComponentDefinition {
 
 			System.out
 					.println("RESPONDING PEER SIZE " + respondingPeers.size());
-			if (respondingPeers.size() == requestProbeSize &&
-					!requestStatuses.get(String.valueOf(event.getRequestId()))) {
+			if (respondingPeers.size() == requestProbeSize
+					&& !requestStatuses
+							.get(String.valueOf(event.getRequestId()))) {
 				System.out.println("// " + requestId + " // "
 						+ " NOW SIZE AND REQUESTPROBESIZE ARE "
 						+ requestProbeSize);
@@ -307,7 +326,7 @@ public final class ResourceManager extends ComponentDefinition {
 				// passing the resource comparator
 				Collections
 						.sort(respondingPeers, new ResourcesComparator(peer));
-                 
+
 				// send a resources allocation request for the node with the
 				// highest number of free resources
 				RequestResources.ActualAllocationRequest objActualAllocationRequest = new RequestResources.ActualAllocationRequest(
@@ -333,9 +352,6 @@ public final class ResourceManager extends ComponentDefinition {
 		public void handle(RequestResources.ActualAllocationRequest event) {
 
 			// Printing out results for tracking reasons
-
-			done = true;
-
 			System.out
 					.println("////"
 							+ event.getRequestId()
@@ -353,51 +369,48 @@ public final class ResourceManager extends ComponentDefinition {
 			// back
 
 			// before allocation
-			
-				boolean success = availableResources.allocate(
-						event.getNumCpus(), event.getAmountMemInMb());
 
-				if (success) {
-					
-					//Statistics.getSingleResourceInstance().incAllocReqCount();
+			boolean success = availableResources.allocate(event.getNumCpus(),
+					event.getAmountMemInMb());
 
-					// trigger a response with success
-					RequestResources.Response objResponse = new RequestResources.Response(
-							self, event.getSource(), success,
-							event.getNumCpus(), event.getAmountMemInMb());
-					trigger(objResponse, networkPort);
+			if (success) {
 
-					// Set the amounts of cpus and amount of memory so that they
-					// can
-					// be released later
-					numAllocatedCpus = event.getNumCpus();
-					amountAllocatedMem = event.getAmountMemInMb();
+				 Statistics.getSingleResourceInstance().incAllocReqCount();
 
-					// Schedule a timeout to release the resources once timeout
-					ScheduleTimeout rst = new ScheduleTimeout(
-							timeToHoldResource);
-					rst.setTimeoutEvent(new AllocateResourcesTimeout(rst, event
-							.getSource(), event.getNumCpus(), event
-							.getAmountMemInMb(), event.getRequestId()));
-					System.out.println("////" + event.getRequestId() + "////"
-							+ "sending Job to node "
-							+ event.getSource().getId());
-					trigger(rst, timerPort);
-					System.out.println("////" + event.getRequestId() + "////"
-							+ ".... Sending timeout event to ... "
-							+ event.getSource().getId());
+				// trigger a response with success
+				RequestResources.Response objResponse = new RequestResources.Response(
+						self, event.getSource(), success, event.getNumCpus(),
+						event.getAmountMemInMb());
+				trigger(objResponse, networkPort);
 
-				} else {
-					// Send a response with failure in case the
-					// resources were not allocated so that the node can send
-					// the request again
-					RequestResources.Response objResponse = new RequestResources.Response(
-							self, event.getSource(), success,
-							event.getNumCpus(), event.getAmountMemInMb());
-					trigger(objResponse, networkPort);
-				}
-			
-			
+				// Set the amounts of cpus and amount of memory so that they
+				// can
+				// be released later
+				numAllocatedCpus = event.getNumCpus();
+				amountAllocatedMem = event.getAmountMemInMb();
+
+				// Schedule a timeout to release the resources once timeout
+				ScheduleTimeout rst = new ScheduleTimeout(timeToHoldResource);
+				rst.setTimeoutEvent(new AllocateResourcesTimeout(rst, event
+						.getSource(), event.getNumCpus(), event
+						.getAmountMemInMb(), event.getRequestId()));
+				System.out.println("////" + event.getRequestId() + "////"
+						+ "sending Job to node " + event.getSource().getId());
+				trigger(rst, timerPort);
+				System.out.println("////" + event.getRequestId() + "////"
+						+ ".... Sending timeout event to ... "
+						+ event.getSource().getId());
+
+			} else {
+				// Send a response with failure in case the
+				// resources were not allocated so that the node can send
+				// the request again
+				RequestResources.Response objResponse = new RequestResources.Response(
+						self, event.getSource(), success, event.getNumCpus(),
+						event.getAmountMemInMb());
+				trigger(objResponse, networkPort);
+			}
+
 		}
 	};
 
@@ -421,7 +434,7 @@ public final class ResourceManager extends ComponentDefinition {
 							+ event.getSuccess());
 
 			if (event.getSuccess()) {
-				Statistics.getSingleResourceInstance().incAllocReqCount();
+				//Statistics.getSingleResourceInstance().incAllocReqCount();
 
 				// log scheduling delay
 				long delay = System.currentTimeMillis() - requestTimestamp;
