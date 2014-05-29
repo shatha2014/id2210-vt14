@@ -44,6 +44,7 @@ public final class ResourceManager extends ComponentDefinition {
 	private static final Logger logger = LoggerFactory
 			.getLogger(ResourceManager.class);
 
+	// a boolean value to decide the mode
 	protected static final boolean TMAN = false;
 
 	Positive<RmPort> indexPort = positive(RmPort.class);
@@ -53,20 +54,32 @@ public final class ResourceManager extends ComponentDefinition {
 	Positive<CyclonSamplePort> cyclonSamplePort = positive(CyclonSamplePort.class);
 	Positive<TManSamplePort> tmanPort = positive(TManSamplePort.class);
 
+	// Used for simulation statistics
 	long requestTimestamp;
+	// Keep the request id for two purposes
+	// tracking statments for each handler and
+	// to check if the request is finalized or not
 	long requestId;
+	// to keep time of holding a resource
 	private int timeToHoldResource;
+	// TODO should be configuration
+	// currently change it manually here please
 	private final int PROBESIZE = 4;
+	// amount of requested CPUs for a certain request
 	private int requestedCPUs;
+	// amount of memory for a certain request
 	private int requestedMemory;
 	// it should be equal to probe size, but
 	// decreased when timeout
 	private int requestProbeSize;
-
+	// Node neighbours which will be filed either
+	// from Cyclon or from TMAN
 	ArrayList<Address> neighbours = new ArrayList<Address>();
+	// self address to be used when needed
 	private Address self;
 	private RmConfiguration configuration;
 	Random random;
+	// available resources of the node
 	private AvailableResources availableResources;
 	Comparator<PeerDescriptor> peerAgeComparator = new Comparator<PeerDescriptor>() {
 		@Override
@@ -78,9 +91,10 @@ public final class ResourceManager extends ComponentDefinition {
 			}
 		}
 	};
+	// Hash map that keeps the request with its status
 	private HashMap<String, Boolean> requestStatuses;
-	private boolean done = false;
 
+	// Handlers subscription
 	public ResourceManager() {
 
 		subscribe(handleInit, control);
@@ -89,15 +103,14 @@ public final class ResourceManager extends ComponentDefinition {
 		subscribe(handleResourceAllocationRequest, networkPort);
 		subscribe(handleResourceAllocationResponse, networkPort);
 		subscribe(handleTManSample, tmanPort);
-		// Shatha Review
 		subscribe(handleActualAllocationRequest, networkPort);
 		subscribe(handleAvailableResourcesResponse, networkPort);
 		subscribe(handleCancelRequest, networkPort);
 		subscribe(handleAllocateResourcesTimeout, timerPort);
 		subscribe(handleRespondPeerTimeout, timerPort);
-
 	}
 
+	// initializations
 	Handler<RmInit> handleInit = new Handler<RmInit>() {
 		@Override
 		public void handle(RmInit init) {
@@ -107,11 +120,6 @@ public final class ResourceManager extends ComponentDefinition {
 			availableResources = init.getAvailableResources();
 			long period = configuration.getPeriod();
 			availableResources = init.getAvailableResources();
-			SchedulePeriodicTimeout rst = new SchedulePeriodicTimeout(period,
-					period);
-			rst.setTimeoutEvent(new UpdateTimeout(rst));
-			trigger(rst, timerPort);
-			// Shatha added
 			timeToHoldResource = 0;
 			requestStatuses = new HashMap<String, Boolean>();
 		}
@@ -119,9 +127,12 @@ public final class ResourceManager extends ComponentDefinition {
 
 	// On receiving a request, the node will send a probe randomly to a
 	// group of its neighbours asking them about the availability of the
-	// requested
-	// resources in the scenario
+	// requested resources in the scenario
+	// [TMAN] in case it is TMAN mode then skip the probing
+	// directly send to one of the neighbours that are already
+	// sorted and ready
 	private void initiateRequest(long requId) {
+		// Tracking statment
 		System.out.println("////" + requId + "////"
 				+ "HANDLE REQUEST RESOURCE : Sending Allocate resources: "
 				+ requestedCPUs + " + " + requestedMemory);
@@ -133,10 +144,9 @@ public final class ResourceManager extends ComponentDefinition {
 			long seed = (long) (System.currentTimeMillis() * Math.random());
 			Random objRandom = new Random(seed);
 			RequestResources.ActualAllocationRequest objActualAllocationRequest = new RequestResources.ActualAllocationRequest(
-					self, neighbours.get(objRandom.nextInt(neighbours.size())), requestedCPUs, requestedMemory,
-					requestId);
+					self, neighbours.get(objRandom.nextInt(neighbours.size())),
+					requestedCPUs, requestedMemory, requestId);
 			trigger(objActualAllocationRequest, networkPort);
-			System.out.println("Trying to send to " + neighbours.get(0).getId() + " Requested CPUs " + requestedCPUs + " Memory " + requestedMemory);
 
 		} else {
 			// 1. Select PROBESIZE random peers from the current neighbors
@@ -149,20 +159,17 @@ public final class ResourceManager extends ComponentDefinition {
 							+ " NEIGHBORS: " + neighbours.get(i).getId());
 				}
 
-				// to ensure unique nodes
-				Address nodeAddress;
-
+				// add random neighbours to be probed for their resources 
 				int counter = 0;
 				while (counter < PROBESIZE) {
-					nodeAddress = neighbours.get(objRandom.nextInt(neighbours
-							.size()));
-					selectedNeighbors.add(nodeAddress);
+					selectedNeighbors.add(neighbours.get(objRandom.nextInt(neighbours.size())));
 					counter++;
-
 				}
-
+                
+				// Need to clear the responding peers array to avoid any issues
+				// if there is a need to reinitiate the request again
+				// in case it was not allocated resources
 				respondingPeers.clear();
-
 			}
 
 			// 2. Send the Request to those selected neighbors
@@ -182,9 +189,9 @@ public final class ResourceManager extends ComponentDefinition {
 				}
 			}
 
-			// to keep the status of the request
+			// to keep the status of the request, still it is not done
+			// it will be done once the resources are allocated
 			requestStatuses.put(String.valueOf(requId), false);
-
 		}
 
 	}
@@ -194,6 +201,7 @@ public final class ResourceManager extends ComponentDefinition {
 
 		@Override
 		public void handle(RequestResource event) {
+			// setting variables 
 			requestedCPUs = event.getNumCpus();
 			requestedMemory = event.getMemoryInMbs();
 			timeToHoldResource = event.getTimeToHoldResource();
@@ -202,19 +210,22 @@ public final class ResourceManager extends ComponentDefinition {
 			// log new requests to statistic
 			requestTimestamp = System.currentTimeMillis();
 			Statistics.getSingleResourceInstance().incSpawnCount();
-
+            
 			initiateRequest(requestId);
 
+			// request probe size is needed to control the 
+			// case when we have less neighbours than the probe size
 			requestProbeSize = PROBESIZE;
 			if (PROBESIZE > neighbours.size())
 				requestProbeSize = neighbours.size();
+			// printing tracking statments
 			System.out.println("//" + requestId + " // "
 					+ " REQUEST PROBE SIZE IS SSSSS " + requestProbeSize);
 
-			// Test REVIEWWWW
-			// Schedule a timeout for the probe size to decrease it in case
-			// one of the nodes didn't reply within time
-			ScheduleTimeout rst = new ScheduleTimeout(290000); // 30000
+			// Schedule a timeout, so that after a certain timeout
+			// the request can be reinitialized again in case it was not 
+			// allocated resources 
+			ScheduleTimeout rst = new ScheduleTimeout(200000); 
 			rst.setTimeoutEvent(new RespondPeerTimeout(rst, requestId));
 			trigger(rst, timerPort);
 
@@ -222,13 +233,13 @@ public final class ResourceManager extends ComponentDefinition {
 	};
 
 	// Step 2: On receiving a request, the node will send a response with its
-	// current resources
-	// so that the original node can decide the nodes with highest free
+	// current resources so that the original node can decide the nodes with highest free
 	// resources
 	Handler<RequestResources.Request> handleResourceAllocationRequest = new Handler<RequestResources.Request>() {
 		@Override
 		public void handle(RequestResources.Request event) {
 
+			// statistics gathering
 			Statistics.getSingleResourceInstance().incRcvdRqstCount();
 
 			// Printing out on the screen for tracking purpose
@@ -251,43 +262,37 @@ public final class ResourceManager extends ComponentDefinition {
 		}
 	};
 
-	// Test REVIEWWWW
-	// On timeout , reset the requestProbeSize to be equal to the current
-	// incremented
-	// size to avoid any delays
+	// On timeout if not TMAN mode, check if the request was not allocated resources 
+	// then reinitialize the request again
 	Handler<RespondPeerTimeout> handleRespondPeerTimeout = new Handler<RespondPeerTimeout>() {
 		@Override
 		public void handle(RespondPeerTimeout event) {
-			
+
 			// if no respond was received then reinitiate the request
-			// IMPORTANNNNNT
-			if(!TMAN)
-			{
-			if (requestStatuses != null && !requestStatuses.get(String.valueOf(event.getRequestId()))) {
-				
-				System.out.println(" TIMEOUT " + event.getRequestId()
-						+ " RESPONDING PEER SIZE IS " + respondingPeers.size());
-				respondingPeers.clear();
-				initiateRequest(event.getRequestId());
+			if (!TMAN) {
+				if (requestStatuses != null
+						&& !requestStatuses.get(String.valueOf(event
+								.getRequestId()))) {
+
+					System.out.println(" TIMEOUT " + event.getRequestId()
+							+ " RESPONDING PEER SIZE IS "
+							+ respondingPeers.size());
+					// clear needed to avoid issues when reinitiating the request again
+					respondingPeers.clear();
+					initiateRequest(event.getRequestId());
 				}
-				
+
 			}
-			System.out.println("// " + requestId + " // "
-					+ "Request Probe Size became " + requestProbeSize);
 		}
 	};
 
-	// Step 3: The original node will start collecting responses from the nodes
-	// it probed
-	// to decide the node with the highest number of resources
-	// ToDelete
-	private ArrayList<ResourcesComparator> grouping = new ArrayList<ResourcesComparator>();
-	private ArrayList<Address> sentRequestsAddresses = new ArrayList<Address>();
+	// Step 3: The original node will start collecting responses from the nodes it probed
+	// to decide the node with the highest number of resources 
 	private ArrayList<PeerInfo> respondingPeers = new ArrayList<PeerInfo>();
 	Handler<RequestResources.AvailableResourcesResponse> handleAvailableResourcesResponse = new Handler<RequestResources.AvailableResourcesResponse>() {
 		@Override
 		public void handle(RequestResources.AvailableResourcesResponse event) {
-			// / printing out for tracking reasons ..
+            // statistics gathering
 			Statistics.getSingleResourceInstance().incAvlblResCount();
 
 			System.out.println("////" + requestId + "////"
@@ -304,21 +309,22 @@ public final class ResourceManager extends ComponentDefinition {
 			peer.setAddress(event.getSource());
 			respondingPeers.add(peer);
 
-			System.out.println("The value of request id " + requestId + " is "
-					+ requestStatuses.get(String.valueOf(requestId)));
-
 			System.out.println("// " + requestId + " // "
 					+ " REQUEST PROBE SIZE is " + requestProbeSize
 					+ " AND NEIGHBORS are " + neighbours.size());
-			System.out.println("TIME " + System.currentTimeMillis());
+			
+			// Needed to avoid the situation when you don't have 
+			// enough neighbours 
 			if (PROBESIZE > neighbours.size())
 				requestProbeSize = neighbours.size();
 
 			System.out
 					.println("RESPONDING PEER SIZE " + respondingPeers.size());
+			// if collected the needed amount of peers then sort them and choose the best
+			// Need to check if the request was not handled for "Reinitiate Requests" cases
 			if (respondingPeers.size() == requestProbeSize
-					&& !requestStatuses
-							.get(String.valueOf(event.getRequestId()))) {
+					&& !requestStatuses.get(String.valueOf(event.getRequestId()))) {
+				// tracking statment 
 				System.out.println("// " + requestId + " // "
 						+ " NOW SIZE AND REQUESTPROBESIZE ARE "
 						+ requestProbeSize);
@@ -333,10 +339,6 @@ public final class ResourceManager extends ComponentDefinition {
 						self, respondingPeers.get(0).getAddress(),
 						event.getNumCpus(), event.getAmountMemInMb(), requestId);
 				trigger(objActualAllocationRequest, networkPort);
-
-				// Add the addresses of the nodes to which you send so that
-				// you can cancel after receiving a success from any of them
-				sentRequestsAddresses.add(respondingPeers.get(0).getAddress());
 
 			}
 		}
@@ -367,15 +369,13 @@ public final class ResourceManager extends ComponentDefinition {
 			// when receiving this request, the node should check if it has
 			// the requested resources, then allocate them and send a response
 			// back
-
-			// before allocation
-
 			boolean success = availableResources.allocate(event.getNumCpus(),
 					event.getAmountMemInMb());
 
 			if (success) {
 
-				 Statistics.getSingleResourceInstance().incAllocReqCount();
+				// statistics gathering
+				Statistics.getSingleResourceInstance().incAllocReqCount();
 
 				// trigger a response with success
 				RequestResources.Response objResponse = new RequestResources.Response(
@@ -384,8 +384,7 @@ public final class ResourceManager extends ComponentDefinition {
 				trigger(objResponse, networkPort);
 
 				// Set the amounts of cpus and amount of memory so that they
-				// can
-				// be released later
+				// can  be released later
 				numAllocatedCpus = event.getNumCpus();
 				amountAllocatedMem = event.getAmountMemInMb();
 
@@ -394,9 +393,11 @@ public final class ResourceManager extends ComponentDefinition {
 				rst.setTimeoutEvent(new AllocateResourcesTimeout(rst, event
 						.getSource(), event.getNumCpus(), event
 						.getAmountMemInMb(), event.getRequestId()));
+				// tracking
 				System.out.println("////" + event.getRequestId() + "////"
 						+ "sending Job to node " + event.getSource().getId());
 				trigger(rst, timerPort);
+				// tracking
 				System.out.println("////" + event.getRequestId() + "////"
 						+ ".... Sending timeout event to ... "
 						+ event.getSource().getId());
@@ -434,13 +435,15 @@ public final class ResourceManager extends ComponentDefinition {
 							+ event.getSuccess());
 
 			if (event.getSuccess()) {
-				//Statistics.getSingleResourceInstance().incAllocReqCount();
 
 				// log scheduling delay
 				long delay = System.currentTimeMillis() - requestTimestamp;
 				Statistics.getSingleResourceInstance().addTime(delay);
-
+                
+				// set the status of the request to be done and finalized 
 				requestStatuses.put(String.valueOf(requestId), true);
+				
+				// tracking statments
 				System.out.println("SETTING THE REQUEST ID " + requestId
 						+ " to true ... ");
 
@@ -449,8 +452,9 @@ public final class ResourceManager extends ComponentDefinition {
 						+ "]" + " from " + event.getSource().getId());
 			} else {
 
+				// statistics gathering 
 				Statistics.getSingleResourceInstance().incReReqCount();
-				// Reinitiate the request again
+				// Reinitiate the request again in case the event was not successful
 				initiateRequest(requestId);
 
 			}
@@ -497,24 +501,26 @@ public final class ResourceManager extends ComponentDefinition {
 		}
 	};
 
+	// After a certain timeout (timetoholdresources) release the resources again
 	Handler<AllocateResourcesTimeout> handleAllocateResourcesTimeout = new Handler<AllocateResourcesTimeout>() {
 		@Override
 		public void handle(AllocateResourcesTimeout event) {
+			// statistics gathering 
 			Statistics.getSingleResourceInstance().incReleaseResCount();
+			// release resources 
 			availableResources.release(event.getNumCpus(),
 					event.getAmountMemInMb());
+			// tracking purposes 
 			System.out.println("////" + event.getRequestId() + "////" + "["
 					+ self.getId() + "]" + " is releasing resources "
 					+ event.getNumCpus() + " and " + event.getAmountMemInMb());
 		}
 	};
 
+	// Handling TMAN samples 
 	Handler<TManSample> handleTManSample = new Handler<TManSample>() {
 		@Override
 		public void handle(TManSample event) {
-			// System.out.println("Received TMan samples: " +
-			// event.getSample().size());
-
 			if (TMAN) {
 
 				// receive a new list of neighbors
