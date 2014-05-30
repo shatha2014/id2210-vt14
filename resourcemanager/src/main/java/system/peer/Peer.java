@@ -17,6 +17,7 @@ import se.sics.kompics.p2p.bootstrap.PeerEntry;
 import se.sics.kompics.p2p.bootstrap.client.BootstrapClient;
 import se.sics.kompics.p2p.bootstrap.client.BootstrapClientInit;
 import se.sics.kompics.timer.Timer;
+import resourcemanager.system.peer.rm.BatchResourceManager;
 import resourcemanager.system.peer.rm.ResourceManager;
 import resourcemanager.system.peer.rm.RmInit;
 import common.configuration.RmConfiguration;
@@ -29,99 +30,114 @@ import tman.system.peer.tman.TMan;
 import tman.system.peer.tman.TManInit;
 import tman.system.peer.tman.TManSamplePort;
 
-
 public final class Peer extends ComponentDefinition {
 
-    	Positive<RmPort> rmPort = positive(RmPort.class);
+	Positive<RmPort> rmPort = positive(RmPort.class);
 
-        Positive<Network> network = positive(Network.class);
+	Positive<Network> network = positive(Network.class);
 	Positive<Timer> timer = positive(Timer.class);
-	
-        private Component cyclon, tman, rm, bootstrap;
+
+	// BatchRM is added to handle the batch requests task
+	private Component cyclon, tman, rm, bootstrap, batchRM;
 	private Address self;
 	private int bootstrapRequestPeerCount;
 	private boolean bootstrapped;
 	private RmConfiguration rmConfiguration;
 	private TManConfiguration tmanConfiguration;
 
-        private AvailableResources availableResources;
-	
+	private AvailableResources availableResources;
+
 	public Peer() {
 		cyclon = create(Cyclon.class);
 		tman = create(TMan.class);
 		rm = create(ResourceManager.class);
 		bootstrap = create(BootstrapClient.class);
+		batchRM = create(BatchResourceManager.class);
 
 		connect(network, rm.getNegative(Network.class));
+		connect(network, batchRM.getNegative(Network.class));
 		connect(network, cyclon.getNegative(Network.class));
 		connect(network, bootstrap.getNegative(Network.class));
 		connect(network, tman.getNegative(Network.class));
 		connect(timer, rm.getNegative(Timer.class));
+		connect(timer, batchRM.getNegative(Timer.class));
 		connect(timer, cyclon.getNegative(Timer.class));
 		connect(timer, bootstrap.getNegative(Timer.class));
 		connect(timer, tman.getNegative(Timer.class));
-		connect(cyclon.getPositive(CyclonSamplePort.class), 
-                        rm.getNegative(CyclonSamplePort.class));
-		connect(cyclon.getPositive(CyclonSamplePort.class), 
-                        tman.getNegative(CyclonSamplePort.class));
-		connect(tman.getPositive(TManSamplePort.class), 
-                        rm.getNegative(TManSamplePort.class));
+		connect(cyclon.getPositive(CyclonSamplePort.class),
+				rm.getNegative(CyclonSamplePort.class));
+		connect(cyclon.getPositive(CyclonSamplePort.class),
+				batchRM.getNegative(CyclonSamplePort.class));
+		connect(cyclon.getPositive(CyclonSamplePort.class),
+				tman.getNegative(CyclonSamplePort.class));
+		connect(tman.getPositive(TManSamplePort.class),
+				rm.getNegative(TManSamplePort.class));
+		connect(tman.getPositive(TManSamplePort.class),
+				batchRM.getNegative(TManSamplePort.class));
 
-                connect(rmPort, rm.getNegative(RmPort.class));
-		
+		connect(rmPort, rm.getNegative(RmPort.class));
+		//connect(rmPort, batchRM.getNegative(RmPort.class));
+
 		subscribe(handleInit, control);
 		subscribe(handleJoinCompleted, cyclon.getPositive(CyclonPort.class));
-		subscribe(handleBootstrapResponse, bootstrap.getPositive(P2pBootstrap.class));
+		subscribe(handleBootstrapResponse,
+				bootstrap.getPositive(P2pBootstrap.class));
 	}
 
-	
 	Handler<PeerInit> handleInit = new Handler<PeerInit>() {
-                @Override
+		@Override
 		public void handle(PeerInit init) {
 			self = init.getPeerSelf();
-			CyclonConfiguration cyclonConfiguration = init.getCyclonConfiguration();
+			CyclonConfiguration cyclonConfiguration = init
+					.getCyclonConfiguration();
 			rmConfiguration = init.getApplicationConfiguration();
-			bootstrapRequestPeerCount = cyclonConfiguration.getBootstrapRequestPeerCount();
+			bootstrapRequestPeerCount = cyclonConfiguration
+					.getBootstrapRequestPeerCount();
 			tmanConfiguration = init.getTManConfiguration();
-            availableResources = init.getAvailableResources();
-                        
-			trigger(new CyclonInit(cyclonConfiguration, availableResources), cyclon.getControl());
-			trigger(new TManInit(self,tmanConfiguration, availableResources), tman.getControl());
-			trigger(new BootstrapClientInit(self, init.getBootstrapConfiguration()), bootstrap.getControl());
-			BootstrapRequest request = new BootstrapRequest("Cyclon", bootstrapRequestPeerCount);
+			availableResources = init.getAvailableResources();
+
+			trigger(new CyclonInit(cyclonConfiguration, availableResources),
+					cyclon.getControl());
+			trigger(new TManInit(self, tmanConfiguration, availableResources),
+					tman.getControl());
+			trigger(new BootstrapClientInit(self,
+					init.getBootstrapConfiguration()), bootstrap.getControl());
+			BootstrapRequest request = new BootstrapRequest("Cyclon",
+					bootstrapRequestPeerCount);
 			trigger(request, bootstrap.getPositive(P2pBootstrap.class));
 		}
 	};
 
-
-	
 	Handler<BootstrapResponse> handleBootstrapResponse = new Handler<BootstrapResponse>() {
-                @Override
+		@Override
 		public void handle(BootstrapResponse event) {
 			if (!bootstrapped) {
 				Set<PeerEntry> somePeers = event.getPeers();
 				LinkedList<Address> cyclonInsiders = new LinkedList<Address>();
-				
+
 				for (PeerEntry peerEntry : somePeers) {
-					cyclonInsiders.add(
-                                                peerEntry.getOverlayAddress().getPeerAddress());
-                                }
-				trigger(new CyclonJoin(self, cyclonInsiders), 
-                                        cyclon.getPositive(CyclonPort.class));
+					cyclonInsiders.add(peerEntry.getOverlayAddress()
+							.getPeerAddress());
+				}
+				trigger(new CyclonJoin(self, cyclonInsiders),
+						cyclon.getPositive(CyclonPort.class));
 				bootstrapped = true;
 			}
 		}
 	};
 
-	
 	Handler<JoinCompleted> handleJoinCompleted = new Handler<JoinCompleted>() {
-                @Override
+		@Override
 		public void handle(JoinCompleted event) {
 			trigger(new BootstrapCompleted("Cyclon", new PeerDescriptor(self,
-                                availableResources.getNumFreeCpus(),
-                                availableResources.getFreeMemInMbs())), 
-                                bootstrap.getPositive(P2pBootstrap.class));
-			trigger(new RmInit(self, rmConfiguration, availableResources), rm.getControl());
+					availableResources.getNumFreeCpus(),
+					availableResources.getFreeMemInMbs())),
+					bootstrap.getPositive(P2pBootstrap.class));
+		    trigger(new RmInit(self, rmConfiguration, availableResources),
+			 rm.getControl());
+		//	trigger(new RmInit(self, rmConfiguration, availableResources),
+			//		batchRM.getControl());
+
 		}
 	};
 

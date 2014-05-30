@@ -2,6 +2,7 @@ package resourcemanager.system.peer.rm;
 
 import common.configuration.RmConfiguration;
 import common.peer.AvailableResources;
+import common.simulation.BatchRequestResources;
 import common.simulation.RequestResource;
 import common.simulation.scenarios.Statistics;
 import cyclon.system.peer.cyclon.CyclonSample;
@@ -45,7 +46,7 @@ public final class ResourceManager extends ComponentDefinition {
 			.getLogger(ResourceManager.class);
 
 	// a boolean value to decide the mode
-	protected static final boolean TMAN = false;
+	protected static final boolean TMAN = true;
 
 	Positive<RmPort> indexPort = positive(RmPort.class);
 	Positive<Network> networkPort = positive(Network.class);
@@ -117,8 +118,6 @@ public final class ResourceManager extends ComponentDefinition {
 			self = init.getSelf();
 			configuration = init.getConfiguration();
 			random = new Random(init.getConfiguration().getSeed());
-			availableResources = init.getAvailableResources();
-			long period = configuration.getPeriod();
 			availableResources = init.getAvailableResources();
 			timeToHoldResource = 0;
 			requestStatuses = new HashMap<String, Boolean>();
@@ -225,7 +224,7 @@ public final class ResourceManager extends ComponentDefinition {
 			// Schedule a timeout, so that after a certain timeout
 			// the request can be reinitialized again in case it was not 
 			// allocated resources 
-			ScheduleTimeout rst = new ScheduleTimeout(200000); 
+			ScheduleTimeout rst = new ScheduleTimeout(280000); 
 			rst.setTimeoutEvent(new RespondPeerTimeout(rst, requestId));
 			trigger(rst, timerPort);
 

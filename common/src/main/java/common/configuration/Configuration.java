@@ -34,7 +34,9 @@ public class Configuration {
         this.seed = seed;
         searchConfiguration = new RmConfiguration(seed);
         tmanConfiguration = new TManConfiguration(seed, 1000, 0.8);
-        cyclonConfiguration = new CyclonConfiguration(seed, 5, 10, 1000, 500000,
+        // Change by Shatha - change cyclon random view size from 10 to 20 to check its effect on batch requests experiments
+        // it had a considerable effect ..
+        cyclonConfiguration = new CyclonConfiguration(seed, 5, 20, 1000, 500000,
                 (long) (Integer.MAX_VALUE - Integer.MIN_VALUE), 20);
 
         String c = File.createTempFile("bootstrap.", ".conf").getAbsolutePath();

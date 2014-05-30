@@ -9,4 +9,6 @@ public class SimulatorPort extends PortType {{
 	positive(RequestResource.class);
 	positive(TerminateExperiment.class);
 	negative(TerminateExperiment.class);
+	// Added by Shatha - Needed for Batch Request Resources task 
+	positive(BatchRequestResources.class);
 }}

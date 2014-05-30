@@ -15,15 +15,29 @@ public class RequestResources  {
 
     public static class Request extends Message {
 
-        private final int numCpus;
+        /**
+		 * 
+		 */
+		private static final long serialVersionUID = -7739878945391947572L;
+		private final int numCpus;
         private final int amountMemInMb;
         private final long requestId;
+        private long jobId; // Needed for Batch Requests Task
 
         public Request(Address source, Address destination, int numCpus, int amountMemInMb, long requestId) {
             super(source, destination);
             this.numCpus = numCpus;
             this.amountMemInMb = amountMemInMb;
             this.requestId = requestId;
+        }
+        
+        // Needed for Batch Requests Task
+        public Request(Address source, Address destination, int numCpus, int amountMemInMb, long requestId,long jobId) {
+            super(source, destination);
+            this.numCpus = numCpus;
+            this.amountMemInMb = amountMemInMb;
+            this.requestId = requestId;
+            this.jobId = jobId;
         }
 
         public int getAmountMemInMb() {
@@ -37,6 +51,11 @@ public class RequestResources  {
         public long getRequestId()
         {
         	return requestId;
+        }
+        
+        public long getJobId()
+        {
+        	return jobId;
         }
 
     }
@@ -55,12 +74,22 @@ public class RequestResources  {
 		private final int numCpus;
         private final int amountMemInMb;
         private final long requestId;
+        private long jobId; //Needed for batch requests task
 
         public AvailableResourcesResponse(Address source, Address destination, int numCpus, int amountMemInMb, long requestId) {
             super(source, destination);
             this.numCpus = numCpus;
             this.amountMemInMb = amountMemInMb;
             this.requestId = requestId;
+        }
+        
+        // Needed for Batch Requests Task
+        public AvailableResourcesResponse(Address source, Address destination, int numCpus, int amountMemInMb, long requestId,long jobId) {
+            super(source, destination);
+            this.numCpus = numCpus;
+            this.amountMemInMb = amountMemInMb;
+            this.requestId = requestId;
+            this.jobId = jobId;
         }
 
         public int getAmountMemInMb() {
@@ -75,15 +104,25 @@ public class RequestResources  {
         {
         	return requestId;
         }
+        
+        public long getJobId()
+        {
+        	return jobId;
+        }
 
     }
 
     // Shatha Review
     public static class ActualAllocationRequest extends Message {
 
-        private final int numCpus;
+        /**
+		 * 
+		 */
+		private static final long serialVersionUID = -7933801285791383845L;
+		private final int numCpus;
         private final int amountMemInMb;
         private final long requestId;
+        private long jobId; //Needed for batch requests task
 
         public ActualAllocationRequest(Address source, Address destination, int numCpus, int amountMemInMb, long requestId) {
             super(source, destination);
@@ -92,6 +131,16 @@ public class RequestResources  {
             this.requestId=  requestId;
         }
 
+        // Needed for batch requests task
+        public ActualAllocationRequest(Address source, Address destination, int numCpus, int amountMemInMb, long requestId, long jobId) {
+            super(source, destination);
+            this.numCpus = numCpus;
+            this.amountMemInMb = amountMemInMb;
+            this.requestId=  requestId;
+            this.jobId = jobId;
+        }
+
+        
         public int getAmountMemInMb() {
             return amountMemInMb;
         }
@@ -104,16 +153,25 @@ public class RequestResources  {
         {
         	return requestId;
         }
-
-
+        
+        public long getJobId()
+        {
+        	return jobId;
+        }
     }
     
     
     public static class Response extends Message {
 
-        private final boolean success;
+        /**
+		 * 
+		 */
+		private static final long serialVersionUID = -5600906797397889357L;
+		private final boolean success;
         private final int numCpus;
         private final int amountMemInMb;
+        private long jobId;//Needed for batch requests task
+        
         public Response(Address source, Address destination, boolean success, int numAllocatedCpus, int numAllocatedMem) {
             super(source, destination);
             this.success = success;
@@ -121,7 +179,15 @@ public class RequestResources  {
             this.amountMemInMb = numAllocatedMem;
         }
         
-        // Shatha - Review
+        // Needed for batch requests task
+        public Response(Address source, Address destination, boolean success, int numAllocatedCpus, int numAllocatedMem, long jobId) {
+            super(source, destination);
+            this.success = success;
+            this.numCpus = numAllocatedCpus;
+            this.amountMemInMb = numAllocatedMem;
+            this.jobId=  jobId;
+        }
+        
         public boolean getSuccess()
         {
         	return this.success;
@@ -136,9 +202,14 @@ public class RequestResources  {
         {
         	return this.amountMemInMb;
         }
+        
+        public long getJobId()
+        {
+        	return this.jobId;
+        }
     }
-    
-    // Shatha - Review 
+
+    // To Be Deleted - not used anymore
     public static class CancelRequest extends Message {
 
         /**

@@ -12,7 +12,8 @@ public class Main {
         // TODO - change the random seed, have the user pass it in.
         long seed = System.currentTimeMillis();
         Configuration configuration = new Configuration(seed);
-
+        
+        
         Scenario scenario = new Scenario1();
         scenario.setSeed(seed);
         scenario.getScenario().simulate(DataCenterSimulationMain.class);
